@@ -102,6 +102,10 @@ void Miot::dump_config() {
 }
 
 void Miot::register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueType type, const std::function<void(const MiotValue &value)> &func) {
+  if (listeners_.find(std::make_pair(siid, piid)) != listeners_.end()) {
+    ESP_LOGW(TAG, "Property already has a listener: %" PRIu32 " %" PRIu32, siid, piid);
+    return;
+  }
   this->listeners_[std::make_pair(siid, piid)] = MiotListener{ .poll = poll, .type = type, .func = func };
 }
 
@@ -137,9 +141,14 @@ void Miot::send_reply_(const char *reply) {
 }
 
 void Miot::update_property(uint32_t siid, uint32_t piid, const char *value) {
-  auto it = listeners_.find(std::make_pair(siid, piid));
-  if (it == listeners_.end())
+  if (heartbeat_siid_ != 0 && heartbeat_piid_ != 0 && siid == heartbeat_siid_ && piid == heartbeat_piid_)
     return;
+
+  auto it = listeners_.find(std::make_pair(siid, piid));
+  if (it == listeners_.end()) {
+    ESP_LOGW(TAG, "Received property value without component: %" PRIu32 " %" PRIu32 " %s", siid, piid, value);
+    return;
+  }
 
   switch ((*it).second.type) {
   case mvtBool:

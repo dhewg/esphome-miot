@@ -1,0 +1,169 @@
+external_components:
+  source: github://dhewg/esphome-miot@main
+
+esphome:
+  name: purifier
+  friendly_name: Air Purifier
+  comment: Xiaomi Smart Air Purifier 4 Lite (zhimi.airp.rmb1)
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_mac_crc: true
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+  reboot_timeout: 0s
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "purifier fallback ap"
+    password: !secret wifi_password
+
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 115200
+
+miot:
+  miot_heartbeat_siid: 11
+  miot_heartbeat_piid: 4
+
+switch:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 1
+    name: "Power"
+    icon: mdi:power
+  - platform: "miot"
+    miot_siid: 6
+    miot_piid: 1
+    name: "Beeper"
+    icon: mdi:volume-high
+    entity_category: config
+  - platform: "miot"
+    miot_siid: 8
+    miot_piid: 1
+    name: "Lock"
+    icon: mdi:lock
+    entity_category: config
+
+select:
+  # TODO this one is read-only, it appears it can't be marked as such?
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 2
+    name: "Device Fault"
+    icon: mdi:fan-alert
+    entity_category: diagnostic
+    options:
+      0: "No Faults"
+      2: "Motor Stop"
+      3: "Sensor Lost"
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 4
+    name: "Mode"
+    options:
+      0: "Auto"
+      1: "Sleep"
+      2: "Favorite"
+  - platform: "miot"
+    miot_siid: 13
+    miot_piid: 2
+    name: "Display Brightness"
+    icon: mdi:brightness-6
+    entity_category: config
+    options:
+      0: "Off"
+      1: "Low"
+      2: "High"
+  - platform: "miot"
+    miot_siid: 14
+    miot_piid: 1
+    name: "Temperature Display Unit"
+    icon: mdi:temperature-celsius
+    entity_category: config
+    options:
+      1: "Celsius"
+      2: "Fahrenheit"
+
+number:
+  - platform: "miot"
+    miot_siid: 9
+    miot_piid: 11
+    name: "Favorite Level"
+    icon: mdi:speedometer
+    min_value: 0
+    max_value: 14
+    step: 1
+
+sensor:
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 1
+    name: "Relative Humidity"
+    unit_of_measurement: "%"
+    device_class: humidity
+    state_class: "measurement"
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 4
+    name: "PM2.5 Density"
+    unit_of_measurement: "µg/m³"
+    device_class: pm25
+    state_class: "measurement"
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 7
+    name: "Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    accuracy_decimals: 1
+    state_class: "measurement"
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 1
+    name: "Filter Life Level"
+    unit_of_measurement: "%"
+    icon: mdi:air-filter
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 3
+    name: "Filter Used Time"
+    unit_of_measurement: "d"
+    icon: mdi:air-filter
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 4
+    name: "Filter Left Time"
+    unit_of_measurement: "d"
+    icon: mdi:air-filter
+  - platform: "miot"
+    miot_siid: 9
+    miot_piid: 1
+    name: "Motor Speed"
+    unit_of_measurement: "rpm"
+    icon: mdi:fan
+
+text_sensor:
+  - platform: "miot"
+    miot_siid: 1
+    miot_piid: 5
+    miot_poll: false
+    name: "Serial Number"
+    icon: mdi:numeric
+    entity_category: diagnostic

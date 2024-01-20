@@ -21,7 +21,6 @@
  * TODO
  * wifi state callback and notify mcu
  * add "access" to components? read/write/notify
- * expose actions
  * automations?
  * reboot mcu on ota reboot
  */
@@ -131,6 +130,13 @@ void Miot::set_property(uint32_t siid, uint32_t piid, const MiotValue &value) {
   }
 
   command_queue_.push(cmd);
+}
+
+void Miot::execute_action(uint32_t siid, uint32_t aiid, const std::string &args) {
+  if (args.empty())
+    command_queue_.push(str_snprintf("down action %" PRIu32 " %" PRIu32, MAX_LINE_LENGTH, siid, aiid));
+  else
+    command_queue_.push(str_snprintf("down action %" PRIu32 " %" PRIu32 " %s", MAX_LINE_LENGTH, siid, aiid, args.c_str()));
 }
 
 void Miot::send_reply_(const char *reply) {

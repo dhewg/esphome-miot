@@ -167,3 +167,21 @@ text_sensor:
     name: "Serial Number"
     icon: mdi:numeric
     entity_category: diagnostic
+
+button:
+  # TODO part of the spec, but doesn't seem to toggle anything?
+  #- platform: "miot"
+  #  miot_siid: 1
+  #  miot_aiid: 1
+  #  name: "Toggle"
+  - platform: "miot"
+    miot_siid: 4
+    miot_aiid: 1
+    miot_action_args: "3"
+    name: "Reset Filter Life"
+    icon: mdi:lifebuoy
+  - platform: "miot"
+    miot_siid: 9
+    miot_aiid: 1
+    name: "Toggle Mode"
+    icon: mdi:cached

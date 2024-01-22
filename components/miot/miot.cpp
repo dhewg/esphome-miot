@@ -3,6 +3,7 @@
 
 #include "miot.h"
 #include "esphome/components/network/util.h"
+#include "esphome/core/application.h"
 #include "esphome/core/gpio.h"
 #include "esphome/core/helpers.h"
 #include "esphome/core/log.h"
@@ -265,6 +266,10 @@ void Miot::process_message_(char *msg) {
       code = strtok_r(nullptr, " ", &saveptr);
     ESP_LOGE(TAG, "MCU command error %s: %s", code, error);
     send_reply_("ok");
+  } else if (cmd == "restore") {
+    ESP_LOGI(TAG, "Resetting to factory defaults...");
+    global_preferences->reset();
+    App.safe_reboot();
   } else {
     ESP_LOGW(TAG, "Unknown command '%s'", cmd.c_str());
     send_reply_("ok");

@@ -176,11 +176,11 @@ text_sensor:
     entity_category: diagnostic
 
 button:
-  # TODO part of the spec, but doesn't seem to toggle anything?
-  #- platform: "miot"
-  #  miot_siid: 1
-  #  miot_aiid: 1
-  #  name: "Toggle"
+  - platform: "miot"
+    miot_siid: 2
+    miot_aiid: 1
+    name: "Toggle Power"
+    icon: mdi:power
   - platform: "miot"
     miot_siid: 4
     miot_aiid: 1

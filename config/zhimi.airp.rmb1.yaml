@@ -5,6 +5,9 @@ esphome:
   name: purifier
   friendly_name: Air Purifier
   comment: Xiaomi Smart Air Purifier 4 Lite (zhimi.airp.rmb1)
+  project:
+    name: "dhewg.esphome-miot"
+    version: "zhimi.airp.rmb1"
 
 esp32:
   board: esp32dev

@@ -54,6 +54,7 @@ class Miot : public Component, public uart::UARTDevice {
     this->heartbeat_piid_ = piid;
   };
   void register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueType type, const std::function<void(const MiotValue &value)> &func);
+  void queue_command(const std::string &cmd);
   void set_property(uint32_t siid, uint32_t piid, const MiotValue &value);
   void execute_action(uint32_t siid, uint32_t aiid, const std::string &args);
 

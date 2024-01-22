@@ -32,17 +32,17 @@ static const char *const TAG = "miot";
 static const int RECEIVE_TIMEOUT = 300;
 
 void Miot::setup() {
-  command_queue_.push("down MIIO_mcu_version_req");
-  command_queue_.push("down MIIO_net_change offline");
+  queue_command("MIIO_mcu_version_req");
+  queue_command("MIIO_net_change offline");
 
   this->set_interval("poll", 60000, [this] {
     std::string cmd;
     cmd.reserve(MAX_LINE_LENGTH);
-    cmd = "down get_properties";
+    cmd = "get_properties";
     for (auto it = listeners_.cbegin(); it != listeners_.cend(); ++it)
       if ((*it).second.poll)
         cmd += str_snprintf(" %" PRIu32 " %" PRIu32, 32, (*it).first.first, (*it).first.second);
-    command_queue_.push(cmd);
+    queue_command(cmd);
   });
 
   if (heartbeat_siid_ != 0 && heartbeat_piid_ != 0)
@@ -56,7 +56,7 @@ void Miot::setup() {
     if (state == ota::OTA_STARTED)
       send_reply_("down MIIO_net_change updating");
     else
-      command_queue_.push(std::string("down MIIO_net_change ") + get_net_reply_());
+      queue_command(std::string("MIIO_net_change ") + get_net_reply_());
   });
 #endif
 }
@@ -108,35 +108,44 @@ void Miot::register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueT
   this->listeners_[std::make_pair(siid, piid)] = MiotListener{ .poll = poll, .type = type, .func = func };
 }
 
+void Miot::queue_command(const std::string &cmd) {
+  ESP_LOGD(TAG, "Queuing MCU command '%s'", cmd.c_str());
+  command_queue_.push(cmd);
+}
+
 void Miot::set_property(uint32_t siid, uint32_t piid, const MiotValue &value) {
   std::string cmd;
 
   switch (value.type) {
   case mvtBool:
-    cmd = str_snprintf("down set_properties %" PRIu32 " %" PRIu32 " %s", MAX_LINE_LENGTH, siid, piid, value.as_bool ? "true" : "false");
+    cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %s", MAX_LINE_LENGTH, siid, piid, value.as_bool ? "true" : "false");
     break;
   case mvtInt:
-    cmd = str_snprintf("down set_properties %" PRIu32 " %" PRIu32 " %d", MAX_LINE_LENGTH, siid, piid, value.as_int);
+    cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %d", MAX_LINE_LENGTH, siid, piid, value.as_int);
     break;
   case mvtUInt:
-    cmd = str_snprintf("down set_properties %" PRIu32 " %" PRIu32 " %" PRIu32, MAX_LINE_LENGTH, siid, piid, value.as_uint);
+    cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %" PRIu32, MAX_LINE_LENGTH, siid, piid, value.as_uint);
     break;
   case mvtFloat:
-    cmd = str_snprintf("down set_properties %" PRIu32 " %" PRIu32 " %f", MAX_LINE_LENGTH, siid, piid, value.as_float);
+    cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %f", MAX_LINE_LENGTH, siid, piid, value.as_float);
     break;
   case mvtString:
-    cmd = str_snprintf("down set_properties %" PRIu32 " %" PRIu32 " %s", MAX_LINE_LENGTH, siid, piid, value.as_string.c_str());
+    cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %s", MAX_LINE_LENGTH, siid, piid, value.as_string.c_str());
     break;
   }
 
-  command_queue_.push(cmd);
+  queue_command(cmd);
 }
 
 void Miot::execute_action(uint32_t siid, uint32_t aiid, const std::string &args) {
+  std::string cmd;
+
   if (args.empty())
-    command_queue_.push(str_snprintf("down action %" PRIu32 " %" PRIu32, MAX_LINE_LENGTH, siid, aiid));
+    cmd = str_snprintf("action %" PRIu32 " %" PRIu32, MAX_LINE_LENGTH, siid, aiid);
   else
-    command_queue_.push(str_snprintf("down action %" PRIu32 " %" PRIu32 " %s", MAX_LINE_LENGTH, siid, aiid, args.c_str()));
+    cmd = str_snprintf("action %" PRIu32 " %" PRIu32 " %s", MAX_LINE_LENGTH, siid, aiid, args.c_str());
+
+  queue_command(cmd);
 }
 
 void Miot::send_reply_(const char *reply) {
@@ -226,7 +235,7 @@ void Miot::process_message_(char *msg) {
     if (command_queue_.empty()) {
       send_reply_("down none");
     } else {
-      send_reply_(command_queue_.front().c_str());
+      send_reply_((std::string("down ") + command_queue_.front()).c_str());
       command_queue_.pop();
     }
   } else if (cmd == "properties_changed") {

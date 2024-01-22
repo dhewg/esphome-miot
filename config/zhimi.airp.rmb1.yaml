@@ -7,7 +7,7 @@ esphome:
   comment: Xiaomi Smart Air Purifier 4 Lite (zhimi.airp.rmb1)
 
 esp32:
-  board: esp32doit-devkit-v1
+  board: esp32dev
   framework:
     type: esp-idf
     sdkconfig_options:

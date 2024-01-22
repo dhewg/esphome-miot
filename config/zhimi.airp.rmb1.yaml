@@ -22,6 +22,12 @@ api:
   encryption:
     key: !secret api_encryption_key
   reboot_timeout: 0s
+  services:
+    - service: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: 'id(miot_main).queue_command(command);'
 
 ota:
   password: !secret ota_password
@@ -39,6 +45,7 @@ uart:
   baud_rate: 115200
 
 miot:
+  id: miot_main
   miot_heartbeat_siid: 11
   miot_heartbeat_piid: 4
 

@@ -83,7 +83,8 @@ void Miot::loop() {
   }
 
   while (this->available()) {
-    this->read_byte(&c);
+    if (!this->read_byte(&c))
+      continue;
 
     if (c == '\r') {
       rx_message_[rx_count_] = 0;

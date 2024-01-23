@@ -20,7 +20,6 @@
 
 /*
  * TODO
- * wifi state callback and notify mcu
  * add "access" to components? read/write/notify
  * automations?
  * reboot mcu on ota reboot
@@ -31,10 +30,16 @@ namespace miot {
 
 static const char *const TAG = "miot";
 static const int RECEIVE_TIMEOUT = 300;
+static const char *const NET_OFFLINE = "offline";
+static const char *const NET_UNPROV = "unprov";
+static const char *const NET_UAP = "uap";
+static const char *const NET_LAN = "lan";
+static const char *const NET_CLOUD = "cloud";
+static const char *const NET_UPDATING = "updating";
 
 void Miot::setup() {
   queue_command("MIIO_mcu_version_req");
-  queue_command("MIIO_net_change offline");
+  queue_net_change_command(true);
 
   this->set_interval("poll", 60000, [this] {
     std::string cmd;
@@ -53,11 +58,17 @@ void Miot::setup() {
 
 #ifdef USE_OTA
   ota::global_ota_component->add_on_state_callback([this](ota::OTAState state, float progress, uint8_t error) {
-    // directly send this to indicate a firmware update, as loop() won't get called anymore
-    if (state == ota::OTA_STARTED)
+    switch (state) {
+    case ota::OTA_STARTED:
+      // directly send this to indicate a firmware update, as loop() won't get called anymore
       send_reply_("down MIIO_net_change updating");
-    else
-      queue_command(std::string("MIIO_net_change ") + get_net_reply_());
+      break;
+    case ota::OTA_ERROR:
+      queue_net_change_command(true);
+      break;
+    default:
+      break;
+    }
   });
 #endif
 }
@@ -112,6 +123,15 @@ void Miot::register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueT
 void Miot::queue_command(const std::string &cmd) {
   ESP_LOGD(TAG, "Queuing MCU command '%s'", cmd.c_str());
   command_queue_.push(cmd);
+}
+
+void Miot::queue_net_change_command(bool force) {
+  const char *reply = get_net_reply_();
+  if (!force && reply == last_net_reply_)
+    return;
+  ESP_LOGI(TAG, "Network status changed to '%s'", reply);
+  queue_command(std::string("MIIO_net_change ") + reply);
+  last_net_reply_ = reply;
 }
 
 void Miot::set_property(uint32_t siid, uint32_t piid, const MiotValue &value) {
@@ -216,21 +236,23 @@ void Miot::update_properties(char **saveptr, bool with_code) {
 
 const char *Miot::get_net_reply_() {
   if (remote_is_connected())
-    return "cloud";
+    return NET_CLOUD;
   if (network::is_connected())
-    return "lan";
+    return NET_LAN;
 #ifdef USE_CAPTIVE_PORTAL
   if (captive_portal::global_captive_portal != nullptr && captive_portal::global_captive_portal->is_active())
-    return "uap";
+    return NET_UAP;
 #endif
   if (network::is_disabled())
-    return "unprov";
-  return "offline";
+    return NET_UNPROV;
+  return NET_OFFLINE;
 }
 
 void Miot::process_message_(char *msg) {
   char *saveptr = nullptr;
   const StringRef cmd(strtok_r(msg, " ", &saveptr));
+
+  queue_net_change_command(false);
 
   if (cmd == "get_down") {
     if (command_queue_.empty()) {

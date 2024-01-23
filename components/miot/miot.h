@@ -55,6 +55,7 @@ class Miot : public Component, public uart::UARTDevice {
   };
   void register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueType type, const std::function<void(const MiotValue &value)> &func);
   void queue_command(const std::string &cmd);
+  void queue_net_change_command(bool force);
   void set_property(uint32_t siid, uint32_t piid, const MiotValue &value);
   void execute_action(uint32_t siid, uint32_t aiid, const std::string &args);
 
@@ -70,6 +71,7 @@ class Miot : public Component, public uart::UARTDevice {
   char rx_message_[MAX_LINE_LENGTH + 1];
   size_t rx_count_{0};
   uint32_t last_rx_char_timestamp_{0};
+  const char *last_net_reply_{nullptr};
   std::string model_;
   std::string mcu_version_;
   std::queue<std::string> command_queue_;

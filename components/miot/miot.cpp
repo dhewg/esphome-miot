@@ -115,7 +115,7 @@ void Miot::dump_config() {
 
 void Miot::register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueType type, const std::function<void(const MiotValue &value)> &func) {
   if (listeners_.find(std::make_pair(siid, piid)) != listeners_.end()) {
-    ESP_LOGW(TAG, "Property already has a listener: %" PRIu32 " %" PRIu32, siid, piid);
+    ESP_LOGE(TAG, "Property already has a listener: %" PRIu32 " %" PRIu32, siid, piid);
     return;
   }
   this->listeners_[std::make_pair(siid, piid)] = MiotListener{ .poll = poll, .type = type, .func = func };

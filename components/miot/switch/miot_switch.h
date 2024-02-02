@@ -19,6 +19,11 @@ class MiotSwitch : public switch_::Switch, public Component {
     this->poll_ = poll;
   }
 
+  void set_miot_bool_values(const std::string &true_value, const std::string &false_value) {
+    this->true_value_ = true_value;
+    this->false_value_ = false_value;
+  }
+
  protected:
   void write_state(bool state) override;
 
@@ -26,6 +31,8 @@ class MiotSwitch : public switch_::Switch, public Component {
   uint32_t siid_{0};
   uint32_t piid_{0};
   bool poll_{true};
+  std::string true_value_;
+  std::string false_value_;
 };
 
 }  // namespace miot

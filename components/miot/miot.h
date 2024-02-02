@@ -12,7 +12,6 @@ namespace esphome {
 namespace miot {
 
 enum MiotValueType {
-  mvtBool,
   mvtInt,
   mvtUInt,
   mvtFloat,
@@ -20,15 +19,14 @@ enum MiotValueType {
 };
 
 struct MiotValue {
-  explicit MiotValue(bool value) { type = mvtBool; as_bool = value; };
   explicit MiotValue(int value) { type = mvtInt; as_int = value; };
   explicit MiotValue(uint32_t value) { type = mvtUInt; as_uint = value; };
   explicit MiotValue(float value) { type = mvtFloat; as_float = value; };
   explicit MiotValue(const char *value) { type = mvtString; as_string = value; };
+  explicit MiotValue(const std::string &value) { type = mvtString; as_string = value; };
 
   MiotValueType type;
   union {
-    bool as_bool;
     int as_int;
     uint32_t as_uint;
     float as_float;

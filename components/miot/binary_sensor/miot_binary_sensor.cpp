@@ -7,9 +7,10 @@ namespace miot {
 static const char *const TAG = "miot.binary_sensor";
 
 void MiotBinarySensor::setup() {
-  this->parent_->register_listener(this->siid_, this->piid_, this->poll_, mvtBool, [this](const MiotValue &value) {
-    ESP_LOGV(TAG, "MCU reported sensor %" PRIu32 ":%" PRIu32 " is: %s", this->siid_, this->piid_, ONOFF(value.as_bool));
-    this->publish_state(value.as_bool);
+  this->parent_->register_listener(this->siid_, this->piid_, this->poll_, mvtString, [this](const MiotValue &value) {
+    bool v = value.as_string == true_value_;
+    ESP_LOGV(TAG, "MCU reported sensor %" PRIu32 ":%" PRIu32 " is: %s", this->siid_, this->piid_, ONOFF(v));
+    this->publish_state(v);
   });
 }
 

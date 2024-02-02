@@ -139,9 +139,6 @@ void Miot::set_property(uint32_t siid, uint32_t piid, const MiotValue &value) {
   std::string cmd;
 
   switch (value.type) {
-  case mvtBool:
-    cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %s", MAX_LINE_LENGTH, siid, piid, value.as_bool ? "true" : "false");
-    break;
   case mvtInt:
     cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %d", MAX_LINE_LENGTH, siid, piid, value.as_int);
     break;
@@ -188,9 +185,6 @@ void Miot::update_property(uint32_t siid, uint32_t piid, const char *value) {
   }
 
   switch ((*it).second.type) {
-  case mvtBool:
-    (*it).second.func(MiotValue(!std::strcmp(value, "true")));
-    break;
   case mvtInt:
     (*it).second.func(MiotValue(parse_number<int>(value).value_or(0)));
     break;

@@ -14,6 +14,10 @@ CONF_MIOT_HEARTBEAT_PIID = "miot_heartbeat_piid"
 CONF_MIOT_SIID = "miot_siid"
 CONF_MIOT_PIID = "miot_piid"
 CONF_MIOT_POLL = "miot_poll"
+CONF_MIOT_TRUE = "miot_true"
+CONF_MIOT_TRUE_DEFAULT = "true"
+CONF_MIOT_FALSE = "miot_false"
+CONF_MIOT_FALSE_DEFAULT = "false"
 
 def validate_heartbeat(config):
     if (CONF_MIOT_HEARTBEAT_SIID in config) != (CONF_MIOT_HEARTBEAT_PIID in config):

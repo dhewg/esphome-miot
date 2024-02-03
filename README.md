@@ -18,6 +18,7 @@ Since this uses [ESPHome](https://esphome.io/), adding your liberated devices to
 There are probably many more devices that could be supported, currently there are ESPHome configs for the following:
 
 [Xiaomi Smart Air Purifier 4 Lite](config/zhimi.airp.rmb1.yaml)
+[Xiaomi Smart Air Purifier 4](config/zhimi.airp.mb5.yaml)
 
 ## Building a firmware
 

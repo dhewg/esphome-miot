@@ -266,6 +266,8 @@ void Miot::process_message_(char *msg) {
     send_reply_(get_net_reply_());
   } else if (cmd == "time") {
     send_reply_("0"); // TODO
+  } else if (cmd == "mac") {
+    send_reply_(get_mac_address().c_str());
   } else if (cmd == "model") {
     model_ = strtok_r(nullptr, " ", &saveptr);
     if (!model_.empty())

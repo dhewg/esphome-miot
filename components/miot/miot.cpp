@@ -200,18 +200,35 @@ void Miot::update_property(uint32_t siid, uint32_t piid, const char *value) {
   }
 }
 
-void Miot::update_properties(char **saveptr, bool with_code) {
-  const char *siid, *piid, *code = nullptr, *value;
-  const char *delim;
+// mrfNotify: properties_changed <siid> <piid> <value> ... <siid> <piid> <value>
+// mrfSet: result <siid> <piid> <code> ... <siid> <piid> <code>
+// mrfAction: result <siid> <aiid> <code> <piid> <value> ... <piid> <value>
+void Miot::update_properties(char **saveptr, MiotResultFormat format) {
+  const char *siid = nullptr, *piid = nullptr, *aiid, *code = nullptr, *value;
+  const char *delim = " ";
+
+  if (format == mrfAction) {
+    if (!(siid = strtok_r(nullptr, delim, saveptr)))
+      return;
+    if (!(aiid = strtok_r(nullptr, delim, saveptr)))
+      return;
+    if (!(code = strtok_r(nullptr, delim, saveptr)))
+      return;
+    if (std::strcmp(code, "0")) {
+      ESP_LOGE(TAG, "Result error on action %s:%s: %s", siid, aiid, code);
+      return;
+    }
+  }
 
   while (true) {
     delim = " ";
 
-    if (!(siid = strtok_r(nullptr, delim, saveptr)))
-      break;
+    if (format != mrfAction)
+      if (!(siid = strtok_r(nullptr, delim, saveptr)))
+        break;
     if (!(piid = strtok_r(nullptr, delim, saveptr)))
       break;
-    if (with_code) {
+    if (format == mrfSet) {
       if (!(code = strtok_r(nullptr, delim, saveptr)))
         break;
       if (std::strcmp(code, "0")) {
@@ -253,14 +270,16 @@ void Miot::process_message_(char *msg) {
     if (command_queue_.empty()) {
       send_reply_("down none");
     } else {
-      send_reply_((std::string("down ") + command_queue_.front()).c_str());
+      const std::string &next_cmd = command_queue_.front();
+      expect_action_result_ = next_cmd.rfind("action ", 0, 7) == 0;
+      send_reply_((std::string("down ") + next_cmd).c_str());
       command_queue_.pop();
     }
   } else if (cmd == "properties_changed") {
-    update_properties(&saveptr, false);
+    update_properties(&saveptr, mrfNotify);
     send_reply_("ok");
   } else if (cmd == "result") {
-    update_properties(&saveptr, true);
+    update_properties(&saveptr, expect_action_result_ ? mrfAction : mrfSet);
     send_reply_("ok");
   } else if (cmd == "net") {
     send_reply_(get_net_reply_());

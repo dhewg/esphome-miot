@@ -1,0 +1,156 @@
+external_components:
+  source: github://dhewg/esphome-miot@main
+  refresh: 0s
+
+esphome:
+  name: purifier
+  friendly_name: Air Purifier
+  comment: Mi Air Purifier 3C (zhimi.airp.mb4a)
+  project:
+    name: "dhewg.esphome-miot"
+    version: "zhimi.airp.mb4a"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_mac_crc: true
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+  reboot_timeout: 0s
+  services:
+    - service: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: 'id(miot_main).queue_command(command);'
+
+ota:
+  password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    password: !secret wifi_ap_password
+
+captive_portal:
+
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 115200
+
+miot:
+  id: miot_main
+  miot_heartbeat_siid: 9
+  miot_heartbeat_piid: 4
+
+switch:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 1
+    name: "Power"
+    icon: mdi:power
+  - platform: "miot"
+    miot_siid: 6
+    miot_piid: 1
+    name: "Beeper"
+    icon: mdi:volume-high
+    entity_category: config
+  - platform: "miot"
+    miot_siid: 8
+    miot_piid: 1
+    name: "Lock"
+    icon: mdi:lock
+    entity_category: config
+
+select:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 4
+    name: "Mode"
+    options:
+      0: "Auto"
+      1: "Sleep"
+      2: "Favorite"
+
+number:
+  - platform: "miot"
+    miot_siid: 7
+    miot_piid: 2
+    name: "Display Brightness"
+    icon: mdi:brightness-6
+    entity_category: config
+    min_value: 0
+    max_value: 8
+    step: 1
+  - platform: "miot"
+    miot_siid: 9
+    miot_piid: 3
+    name: "Favorite Speed"
+    icon: mdi:speedometer
+    min_value: 300
+    max_value: 2200
+    step: 1
+
+sensor:
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 4
+    name: "PM2.5 Density"
+    unit_of_measurement: "µg/m³"
+    device_class: pm25
+    state_class: "measurement"
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 1
+    name: "Filter Life Level"
+    unit_of_measurement: "%"
+    icon: mdi:air-filter
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 3
+    name: "Filter Used Time"
+    unit_of_measurement: "h"
+    icon: mdi:air-filter
+  - platform: "miot"
+    miot_siid: 9
+    miot_piid: 1
+    name: "Motor Speed"
+    unit_of_measurement: "rpm"
+    icon: mdi:fan
+
+text_sensor:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 2
+    name: "Device Fault"
+    icon: mdi:fan-alert
+    entity_category: diagnostic
+    filters:
+        - substitute:
+            - "null -> No Faults"
+  - platform: "miot"
+    miot_siid: 1
+    miot_piid: 3
+    miot_poll: false
+    name: "Serial Number"
+    icon: mdi:numeric
+    entity_category: diagnostic
+
+button:
+  - platform: "miot"
+    miot_siid: 4
+    miot_aiid: 1
+    miot_action_args: "3 0"
+    name: "Reset Filter Life"
+    icon: mdi:lifebuoy

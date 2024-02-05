@@ -137,11 +137,11 @@ text_sensor:
 number:
   - platform: "miot"
     miot_siid: 9
-    miot_piid: 5
-    name: "Favorite Level"
+    miot_piid: 2
+    name: "Favorite Speed"
     icon: mdi:speedometer
     min_value: 0
-    max_value: 11
+    max_value: 2000
     step: 1
   - platform: "miot"
     miot_siid: 9
@@ -202,6 +202,19 @@ sensor:
     name: "Motor Speed"
     unit_of_measurement: "rpm"
     icon: mdi:fan
+  - platform: "miot"
+    miot_siid: 11
+    miot_piid: 1
+    name: "Total Purified Volume"
+    unit_of_measurement: "m³"
+    state_class: "measurement"
+    entity_category: diagnostic
+  - platform: "miot"
+    miot_siid: 11
+    miot_piid: 2
+    name: "Average AQI"
+    state_class: "measurement"
+    entity_category: diagnostic
 
 button:
   - platform: "miot"

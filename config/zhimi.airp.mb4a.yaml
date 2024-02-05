@@ -1,6 +1,5 @@
 external_components:
   source: github://dhewg/esphome-miot@main
-  refresh: 0s
 
 esphome:
   name: purifier

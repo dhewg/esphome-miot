@@ -40,6 +40,12 @@ struct MiotListener {
   std::function<void(const MiotValue &value)> func;
 };
 
+enum MiotResultFormat {
+  mrfNotify,
+  mrfSet,
+  mrfAction,
+};
+
 class Miot : public Component, public uart::UARTDevice {
  public:
   float get_setup_priority() const override { return setup_priority::DATA; }
@@ -61,7 +67,7 @@ class Miot : public Component, public uart::UARTDevice {
   const char *get_net_reply_();
   void send_reply_(const char *reply);
   void update_property(uint32_t siid, uint32_t piid, const char *value);
-  void update_properties(char **saveptr, bool with_code);
+  void update_properties(char **saveptr, MiotResultFormat format);
   void process_message_(char *msg);
 
   static const size_t MAX_LINE_LENGTH = 512;
@@ -73,6 +79,7 @@ class Miot : public Component, public uart::UARTDevice {
   std::string model_;
   std::string mcu_version_;
   std::queue<std::string> command_queue_;
+  bool expect_action_result_{false};
   uint32_t heartbeat_siid_{0};
   uint32_t heartbeat_piid_{0};
   std::map<std::pair<uint32_t, uint32_t>, MiotListener> listeners_;

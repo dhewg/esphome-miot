@@ -62,13 +62,13 @@ switch:
   - platform: "miot"
     miot_siid: 6
     miot_piid: 1
-    name: "Beeper"
+    name: "Notification Sounds"
     icon: mdi:volume-high
     entity_category: config
   - platform: "miot"
     miot_siid: 8
     miot_piid: 1
-    name: "Lock"
+    name: "Child Lock"
     icon: mdi:lock
     entity_category: config
 
@@ -137,6 +137,7 @@ sensor:
     miot_siid: 4
     miot_piid: 3
     name: "Filter Used Time"
+    entity_category: diagnostic
     unit_of_measurement: "h"
     icon: mdi:air-filter
   - platform: "miot"
@@ -152,4 +153,5 @@ button:
     miot_aiid: 1
     miot_action_args: "3 0"
     name: "Reset Filter Life"
-    icon: mdi:lifebuoy
+    icon: mdi:restart
+    entity_category: config

@@ -25,6 +25,12 @@ api:
   encryption:
     key: !secret api_encryption_key
   reboot_timeout: 0s
+  services:
+    - service: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: 'id(miot_main).queue_command(command);'
 
 ota:
   password: !secret ota_password
@@ -36,7 +42,7 @@ wifi:
     password: !secret wifi_ap_password
 
 captive_portal:
-    
+
 uart:
   tx_pin: GPIO17
   rx_pin: GPIO16
@@ -181,14 +187,14 @@ sensor:
   - platform: "miot"
     miot_siid: 3
     miot_piid: 1
-    name: "Humidity"
+    name: "Relative Humidity"
     unit_of_measurement: "%"
     device_class: humidity
     state_class: "measurement"
   - platform: "miot"
     miot_siid: 3
     miot_piid: 4
-    name: "PM2.5"
+    name: "PM2.5 Density"
     unit_of_measurement: "µg/m³"
     device_class: pm25
     state_class: "measurement"
@@ -209,7 +215,7 @@ sensor:
   - platform: "miot"
     miot_siid: 4
     miot_piid: 3
-    name: "Filter Use"
+    name: "Filter Used Time"
     entity_category: diagnostic
     unit_of_measurement: "h"
     icon: mdi:air-filter
@@ -223,7 +229,6 @@ sensor:
   - platform: "miot"
     miot_siid: 9
     miot_piid: 1
-    entity_category: diagnostic
     name: "Motor Speed"
     unit_of_measurement: "rpm"
     icon: mdi:fan
@@ -233,13 +238,11 @@ sensor:
     name: "Total Purified Volume"
     unit_of_measurement: "m³"
     state_class: "measurement"
-    entity_category: diagnostic
   - platform: "miot"
     miot_siid: 11
     miot_piid: 2
     name: "Average AQI"
     state_class: "measurement"
-    entity_category: diagnostic
 
 button:
   - platform: "miot"

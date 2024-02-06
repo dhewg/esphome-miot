@@ -62,28 +62,17 @@ switch:
   - platform: "miot"
     miot_siid: 6
     miot_piid: 1
-    name: "Beeper"
+    name: "Notification Sounds"
     icon: mdi:volume-high
     entity_category: config
   - platform: "miot"
     miot_siid: 8
     miot_piid: 1
-    name: "Lock"
+    name: "Child Lock"
     icon: mdi:lock
     entity_category: config
 
 select:
-  # TODO this one is read-only, it appears it can't be marked as such?
-  - platform: "miot"
-    miot_siid: 2
-    miot_piid: 2
-    name: "Device Fault"
-    icon: mdi:fan-alert
-    entity_category: diagnostic
-    options:
-      0: "No Faults"
-      2: "Motor Stop"
-      3: "Sensor Lost"
   - platform: "miot"
     miot_siid: 2
     miot_piid: 4
@@ -120,6 +109,17 @@ text_sensor:
     name: "Serial Number"
     icon: mdi:numeric
     entity_category: diagnostic
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 2
+    name: "Device Fault"
+    icon: mdi:fan-alert
+    entity_category: diagnostic
+    filters:
+      - substitute:
+        - "0 -> No Faults"
+        - "2 -> Motor Stop"
+        - "3 -> Sensor Lost"
 
 number:
   - platform: "miot"
@@ -164,12 +164,14 @@ sensor:
     miot_siid: 4
     miot_piid: 3
     name: "Filter Used Time"
+    entity_category: diagnostic
     unit_of_measurement: "d"
     icon: mdi:air-filter
   - platform: "miot"
     miot_siid: 4
     miot_piid: 4
-    name: "Filter Left Time"
+    name: "Filter Lifetime Remaining"
+    entity_category: diagnostic
     unit_of_measurement: "d"
     icon: mdi:air-filter
   - platform: "miot"
@@ -190,7 +192,8 @@ button:
     miot_aiid: 1
     miot_action_args: "3"
     name: "Reset Filter Life"
-    icon: mdi:lifebuoy
+    icon: mdi:restart
+    entity_category: config
   - platform: "miot"
     miot_siid: 9
     miot_aiid: 1

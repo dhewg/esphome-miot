@@ -120,7 +120,15 @@ select:
       2: "Fahrenheit"
 
 text_sensor:
-  - platform: "miot"  
+# TODO while this gets sent, it may be 20 times escaped 0xff, which makes HA crash
+#  - platform: "miot"
+#    miot_siid: 1
+#    miot_piid: 5
+#    miot_poll: false
+#    name: "Serial Number"
+#    icon: mdi:numeric
+#    entity_category: diagnostic
+  - platform: "miot"
     miot_siid: 2
     miot_piid: 2
     name: "Device Fault"
@@ -140,7 +148,8 @@ number:
     miot_piid: 2
     name: "Favorite Speed"
     icon: mdi:speedometer
-    min_value: 0
+    # specs claim 200-2300, but the mcu only accepts 450-2000
+    min_value: 450
     max_value: 2000
     step: 1
   - platform: "miot"
@@ -150,6 +159,22 @@ number:
     icon: mdi:speedometer
     min_value: 0
     max_value: 2000
+    step: 1
+  - platform: "miot"
+    miot_siid: 9
+    miot_piid: 5
+    name: "Favorite Level"
+    icon: mdi:speedometer
+    min_value: 0
+    max_value: 11
+    step: 1
+  - platform: "miot"
+    miot_siid: 9
+    miot_piid: 9
+    name: "Manual Level"
+    icon: mdi:speedometer
+    min_value: 0
+    max_value: 11
     step: 1
 
 sensor:
@@ -218,8 +243,24 @@ sensor:
 
 button:
   - platform: "miot"
+    miot_siid: 2
+    miot_aiid: 1
+    name: "Toggle Power"
+    icon: mdi:power
+  - platform: "miot"
     miot_siid: 4
     miot_aiid: 1
+    miot_action_args: "3"
     name: "Reset Filter Life"
     icon: mdi:restart
     entity_category: config
+  - platform: "miot"
+    miot_siid: 9
+    miot_aiid: 1
+    name: "Toggle Mode"
+    icon: mdi:cached
+  - platform: "miot"
+    miot_siid: 9
+    miot_aiid: 2
+    name: "Toggle Fan Level"
+    icon: mdi:approximately-equal

@@ -1,3 +1,5 @@
+# https://home.miot-spec.com/spec?type=urn%3Amiot-spec-v2%3Adevice%3Aair-purifier%3A0000A007%3Azhimi-mb4a%3A1
+
 external_components:
   source: github://dhewg/esphome-miot@main
 

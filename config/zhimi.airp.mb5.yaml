@@ -165,7 +165,7 @@ number:
     miot_piid: 4
     name: "Manual Speed"
     icon: mdi:speedometer
-    min_value: 0
+    min_value: 450
     max_value: 2000
     step: 1
   - platform: "miot"
@@ -173,7 +173,7 @@ number:
     miot_piid: 5
     name: "Favorite Level"
     icon: mdi:speedometer
-    min_value: 0
+    min_value: 1
     max_value: 11
     step: 1
   - platform: "miot"
@@ -181,7 +181,7 @@ number:
     miot_piid: 9
     name: "Manual Level"
     icon: mdi:speedometer
-    min_value: 0
+    min_value: 1
     max_value: 11
     step: 1
 

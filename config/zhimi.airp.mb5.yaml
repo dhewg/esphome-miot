@@ -54,6 +54,12 @@ switch:
     name: "Power"
     icon: mdi:power
   - platform: "miot"
+    miot_siid: 2
+    miot_piid: 6
+    name: "Ionizer"
+    icon: mdi:molecule
+    entity_category: config
+  - platform: "miot"
     miot_siid: 6
     miot_piid: 1
     name: "Notification Sounds"
@@ -64,12 +70,6 @@ switch:
     miot_piid: 1
     name: "Child Lock"
     icon: mdi:lock
-    entity_category: config
-  - platform: "miot"
-    miot_siid: 2
-    miot_piid: 6
-    name: "Ionizer"
-    icon: mdi:molecule
     entity_category: config
 
 binary_sensor:

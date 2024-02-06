@@ -118,7 +118,7 @@ text_sensor:
     icon: mdi:fan-alert
     entity_category: diagnostic
     filters:
-      - substitute:
+      - map:
         - "0 -> No Faults"
         - "2 -> Motor Stop"
         - "3 -> Sensor Lost"

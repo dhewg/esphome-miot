@@ -99,7 +99,7 @@ text_sensor:
     icon: mdi:fan-alert
     entity_category: diagnostic
     filters:
-      - substitute:
+      - map:
         - "null -> No Faults"
 
 number:

@@ -255,7 +255,7 @@ button:
   - platform: "miot"
     miot_siid: 4
     miot_aiid: 1
-    miot_action_args: "3"
+    miot_action_args: "3 0"
     name: "Reset Filter Life"
     icon: mdi:restart
     entity_category: config

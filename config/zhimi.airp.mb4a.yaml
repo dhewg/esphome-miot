@@ -82,6 +82,24 @@ select:
       1: "Sleep"
       2: "Favorite"
 
+text_sensor:
+  - platform: "miot"
+    miot_siid: 1
+    miot_piid: 3
+    miot_poll: false
+    name: "Serial Number"
+    icon: mdi:numeric
+    entity_category: diagnostic
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 2
+    name: "Device Fault"
+    icon: mdi:fan-alert
+    entity_category: diagnostic
+    filters:
+      - substitute:
+        - "null -> No Faults"
+
 number:
   - platform: "miot"
     miot_siid: 7
@@ -127,24 +145,6 @@ sensor:
     name: "Motor Speed"
     unit_of_measurement: "rpm"
     icon: mdi:fan
-
-text_sensor:
-  - platform: "miot"
-    miot_siid: 2
-    miot_piid: 2
-    name: "Device Fault"
-    icon: mdi:fan-alert
-    entity_category: diagnostic
-    filters:
-        - substitute:
-            - "null -> No Faults"
-  - platform: "miot"
-    miot_siid: 1
-    miot_piid: 3
-    miot_poll: false
-    name: "Serial Number"
-    icon: mdi:numeric
-    entity_category: diagnostic
 
 button:
   - platform: "miot"

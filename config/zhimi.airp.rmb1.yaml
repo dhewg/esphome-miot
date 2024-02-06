@@ -112,6 +112,15 @@ select:
       1: "Celsius"
       2: "Fahrenheit"
 
+text_sensor:
+  - platform: "miot"
+    miot_siid: 1
+    miot_piid: 5
+    miot_poll: false
+    name: "Serial Number"
+    icon: mdi:numeric
+    entity_category: diagnostic
+
 number:
   - platform: "miot"
     miot_siid: 9
@@ -169,15 +178,6 @@ sensor:
     name: "Motor Speed"
     unit_of_measurement: "rpm"
     icon: mdi:fan
-
-text_sensor:
-  - platform: "miot"
-    miot_siid: 1
-    miot_piid: 5
-    miot_poll: false
-    name: "Serial Number"
-    icon: mdi:numeric
-    entity_category: diagnostic
 
 button:
   - platform: "miot"

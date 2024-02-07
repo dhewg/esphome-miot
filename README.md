@@ -17,11 +17,11 @@ Since this uses [ESPHome](https://esphome.io/), adding your liberated devices to
 
 There are probably many more devices that could be supported, currently there are ESPHome configs for the following:
 
-Device | ESPHome Config | MIoT Specification
----|---|---
-Mi Air Purifier 3C | [zhimi.airp.mb4a](config/zhimi.airp.mb4a.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb4a)
-Xiaomi Smart Air Purifier 4 | [zhimi.airp.mb5](config/zhimi.airp.mb5.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb5)
-Xiaomi Smart Air Purifier 4 Lite | [zhimi.airp.rmb1](config/zhimi.airp.rmb1.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.rmb1)
+Device | Wiki | ESPHome Config | MIoT Specification
+---|---|---|---
+Mi Air Purifier 3C | | [zhimi.airp.mb4a](config/zhimi.airp.mb4a.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb4a)
+Xiaomi Smart Air Purifier 4 | | [zhimi.airp.mb5](config/zhimi.airp.mb5.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb5)
+Xiaomi Smart Air Purifier 4 Lite | [link](../../wiki/Xiaomi-Smart-Air-Purifier-4-Lite-(zhimi.airp.rmb1)) | [zhimi.airp.rmb1](config/zhimi.airp.rmb1.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.rmb1)
 
 ## Building a firmware
 

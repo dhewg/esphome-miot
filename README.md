@@ -17,11 +17,11 @@ Since this uses [ESPHome](https://esphome.io/), adding your liberated devices to
 
 There are probably many more devices that could be supported, currently there are ESPHome configs for the following:
 
-Device | ESPHome Config
----|---
-Mi Air Purifier 3C | [zhimi.airp.mb4a](config/zhimi.airp.mb4a.yaml)
-Xiaomi Smart Air Purifier 4 | [zhimi.airp.mb5](config/zhimi.airp.mb5.yaml)
-Xiaomi Smart Air Purifier 4 Lite | [zhimi.airp.rmb1](config/zhimi.airp.rmb1.yaml)
+Device | ESPHome Config | MIoT Specification
+---|---|---
+Mi Air Purifier 3C | [zhimi.airp.mb4a](config/zhimi.airp.mb4a.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb4a)
+Xiaomi Smart Air Purifier 4 | [zhimi.airp.mb5](config/zhimi.airp.mb5.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb5)
+Xiaomi Smart Air Purifier 4 Lite | [zhimi.airp.rmb1](config/zhimi.airp.rmb1.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.rmb1)
 
 ## Building a firmware
 
@@ -31,11 +31,11 @@ There's no need to clone this repo, unless you plan to contribute - which would 
 
 ## Adding devices
 
-First, look up the desired device on the [MIoT specs site](https://home.miot-spec.com/).
+First, look up the desired device on the [Xiaomi MIoT Spec](https://home.miot-spec.com/) site.
 
 Each device defines its service (`SIID`) and property (`PIID`) IDs. You just have to add all the desired properties with their according IDs to your ESPHome yaml config.
 
-For an example, see the [spec for the Xiaomi Smart Air Purifier 4 Lite](https://home.miot-spec.com/spec?type=urn%3Amiot-spec-v2%3Adevice%3Aair-purifier%3A0000A007%3Azhimi-rmb1%3A2) and its [ESPHome config file](config/zhimi.airp.rmb1.yaml).
+For examples, see the [supported devices](#supported-devices) table above and compare a config against its specification.
 
 Once your newly added device is working, please open a PR to add its config here!
 

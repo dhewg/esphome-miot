@@ -164,6 +164,7 @@ number:
     miot_piid: 4
     name: "Manual Speed"
     icon: mdi:speedometer
+    # specs claim 0-2000, but the mcu only accepts 450-2000
     min_value: 450
     max_value: 2000
     step: 1
@@ -172,6 +173,7 @@ number:
     miot_piid: 5
     name: "Favorite Level"
     icon: mdi:speedometer
+    # specs claim 0-11, but the mcu only accepts 1-11
     min_value: 1
     max_value: 11
     step: 1

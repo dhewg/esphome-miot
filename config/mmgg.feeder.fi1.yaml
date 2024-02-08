@@ -1,0 +1,428 @@
+# https://home.miot-spec.com/spec/mmgg.feeder.fi1
+# 
+# TODO: Automatically adjust "phon-timezone" based on home assistant time for DST.
+# 
+# Home Assistant schedule card for this config available at:
+# https://github.com/cristianchelu/dispenser-schedule-card
+
+external_components:
+  source: github://dhewg/esphome-miot@main
+
+globals:
+  - id: schedule
+    # map<id, {hour, minute, portions, status}>
+    type: std::map<int, std::array<int, 4>>
+  - id: portions_dispensed_today
+    type: int
+    restore_value: True
+    initial_value: "0"
+
+script:
+  - id: refresh_feed_plan
+    then:
+      - lambda: id(miot_main).execute_action(5, 6, "11 0");
+      - lambda: id(miot_main).execute_action(5, 6, "11 1");
+  - id: dispense_food
+    parameters:
+      portions: int
+    then:
+      lambda: id(miot_main).queue_command("action 2 1 5 %i", portions);
+
+esphome:
+  name: feeder
+  friendly_name: Pet Feeder
+  comment: Xiaomi Smart Pet Food Feeder (mmgg.feeder.fi1)
+  project:
+    name: "dhewg.esphome-miot"
+    version: "mmgg.feeder.fi1"
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+    timezone: GMT0
+    on_time: 
+      - hours: "*"
+        minutes: 0
+        seconds: 30
+        then:
+          # Refresh the feed plan at midnight in device timezone
+          # with 30 second buffer for potential MCU time drift
+          - lambda: |-
+              int current_hour = id(homeassistant_time).now().hour;
+              int adjusted_hour = current_hour + id(phon_time_zone).state;
+              if (adjusted_hour == 24 || adjusted_hour == 0) {
+                id(refresh_feed_plan).execute();
+                id(portions_dispensed_today) = 0;
+              }
+
+esp8266:
+  board: esp_wroom_02
+
+logger:
+  level: DEBUG
+  # Important: Disable UART1 logging to avoid hardware errors on main UART0
+  baud_rate: 0
+
+api:
+  encryption:
+    key: !secret feeder_api_key
+  reboot_timeout: 0s
+  on_client_connected:
+    then:
+      # Refresh the feed plan when HA connects
+      - script.execute: refresh_feed_plan
+  services:
+    # DEBUG ONLY: Send **arbitrary commands** to MCU from HA
+    - service: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: id(miot_main).queue_command(command);
+    # Refresh the "Raw Feed Plan" sensor on demand
+    - service: refresh_feed_plan
+      then:
+        - script.execute: refresh_feed_plan
+    # Dispense the specified amount of portions
+    - service: dispense_food
+      variables:
+        portions: int
+      then:
+        - script.execute: 
+            id: dispense_food
+            portions: !lambda return portions;
+    # Add a new scheduled feeding time to MCU memory
+    - service: add_scheduled_feed
+      variables:
+        id: int
+        hour: int
+        minute: int
+        portions: int
+      then:
+        - lambda: |
+            id(miot_main).queue_command(
+              "action 5 7 10 %i 6 %i 7 %i 8 %i",
+              id, hour, minute, portions);
+        - script.execute: refresh_feed_plan
+    # Edit a scheduled feeding time in MCU memory
+    - service: edit_scheduled_feed
+      variables:
+        id: int
+        hour: int
+        minute: int
+        portions: int
+      then:
+        - lambda: |
+            id(miot_main).queue_command(
+              "action 5 8 10 %i 6 %i 7 %i 8 %i",
+              id, hour, minute, portions);
+        - script.execute: refresh_feed_plan
+    # Remove a scheduled feeding time from MCU memory
+    - service: remove_scheduled_feed
+      variables:
+        id: int
+      then:
+        - lambda: id(miot_main).queue_command("action 5 9 10 %i", id);
+        - script.execute: refresh_feed_plan
+
+ota:
+  - platform: esphome
+    password: !secret feeder_ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "Pet-Feeder Fallback Hotspot"
+    password: !secret feeder_ap_password
+
+captive_portal:
+    
+uart:
+  tx_pin: GPIO15
+  rx_pin: GPIO13
+  baud_rate: 115200
+
+miot:
+  id: miot_main
+
+switch:
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 1
+    miot_true: "1"
+    miot_false: "0"
+    name: "Indicator Lights"
+    icon: mdi:lightbulb
+    entity_category: config
+  - platform: "miot"
+    miot_siid: 5
+    miot_piid: 5
+    miot_true: "1"
+    miot_false: "0"
+    name: "Feeding Schedule"
+    icon: mdi:calendar-badge
+    entity_category: config
+  - platform: "miot"
+    miot_siid: 6
+    miot_piid: 1
+    miot_true: "1"
+    miot_false: "0"
+    name: "Child Lock"
+    icon: mdi:lock
+    inverted: yes
+    entity_category: config
+
+binary_sensor:
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 8
+    miot_true: "1"
+    miot_false: "0"
+    name: "Top Lid"
+    device_class: opening
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 9
+    miot_true: "1"
+    miot_false: "0"
+    name: "Food Door"
+    device_class: opening
+
+text_sensor:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 1
+    name: "Faults"
+    icon: mdi:chili-alert
+    entity_category: diagnostic
+    filters:
+      - map:
+        - "0 -> No Faults"
+        - "1 -> OK"
+        - "3 -> Error"
+        - "5 -> Timeout"
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 6
+    name: "Food Level"
+    icon: mdi:cup
+    filters:
+      - map:
+        - "0 -> Normal"
+        - "1 -> Low"
+        - "2 -> Empty"
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 5
+    name: "Last Feed Source"
+    icon: mdi:food-apple
+    miot_poll: false
+    filters:
+      - map:
+        - "0 -> Schedule 0"
+        - "1 -> Schedule 1"
+        - "2 -> Schedule 2"
+        - "3 -> Schedule 3"
+        - "4 -> Schedule 4"
+        - "5 -> Schedule 5"
+        - "6 -> Schedule 6"
+        - "7 -> Schedule 7"
+        - "8 -> Schedule 8"
+        - "9 -> Schedule 9"
+        - "255 -> Manual Feed"
+  - platform: template
+    name: "Raw Feed Plan"
+    id: raw_feed_plan
+    icon: mdi:calendar-clock
+    update_interval: never
+    entity_category: diagnostic
+    lambda: |-
+      std::string feeding_schedule;
+      for (auto &entry : id(schedule)) {
+        if (entry.second[0] == 255) {
+          continue; // Skip empty entries
+        }
+        feeding_schedule += str_sprintf("%d,%d,%d,%d,%d,",
+                                        entry.first,
+                                        entry.second[0],
+                                        entry.second[1],
+                                        entry.second[2],
+                                        entry.second[3]);
+      }
+      if (!feeding_schedule.empty()) {
+        feeding_schedule.pop_back(); // Remove the trailing comma
+      }
+      return feeding_schedule;
+  # FeedID,Hour,Minute,Portions,(Dispensed=0,Failed=1,Dispensing=254,Pending=255) x5
+  - platform: "miot"
+    id: feedplan_string
+    miot_siid: 5
+    miot_piid: 12
+    miot_poll: false
+    internal: true
+    on_value:
+      - lambda: |-
+          char* token = strtok(x.data(), ",");
+          
+          while (token != NULL) {
+            int feed_id = atoi(token);
+            token = strtok(NULL, ",");
+            
+            int hour = atoi(token);
+            token = strtok(NULL, ",");
+            
+            int minute = atoi(token);
+            token = strtok(NULL, ",");
+            
+            int portions = atoi(token);
+            token = strtok(NULL, ",");
+            
+            int status = atoi(token);
+            token = strtok(NULL, ",");
+
+            id(schedule)[feed_id] = {hour, minute, portions, status};
+          }
+      - lambda: id(raw_feed_plan).update();
+
+number:
+  - platform: "miot"
+    id: phon_time_zone
+    miot_siid: 9
+    miot_piid: 12
+    name: "Timezone Offset"
+    icon: mdi:clock
+    entity_category: config
+    step: 1
+    min_value: -12
+    max_value: 12
+    mode: box
+    unit_of_measurement: h
+  - platform: template
+    id: dispense_food_portions
+    name: "Dispense Amount"
+    icon: mdi:food-apple
+    min_value: 1
+    max_value: 30
+    step: 1
+    optimistic: True
+    restore_value: False
+    initial_value: 1
+    entity_category: config
+    unit_of_measurement: portions
+    mode: box
+
+sensor:
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 4
+    name: "Last Feed Amount"
+    id: outfood_num
+    icon: mdi:food-apple
+    miot_poll: false
+    unit_of_measurement: portions
+  - platform: "miot"
+    miot_siid: 8
+    miot_piid: 1
+    name: "Feeder Clean Timer"
+    unit_of_measurement: d
+    state_class: measurement
+    device_class: duration
+    icon: mdi:broom
+  - platform: "miot"
+    miot_siid: 11
+    miot_piid: 2
+    name: "Dessicant Replace Timer"
+    unit_of_measurement: d
+    state_class: measurement
+    device_class: duration
+    icon: mdi:air-filter
+  - platform: "miot"    
+    miot_siid: 9
+    miot_piid: 13
+    name: "Device Country"
+    icon: mdi:clock
+    entity_category: diagnostic
+  - platform: "template"
+    name: "Dispensed Today"
+    id: dispensed_today
+    accuracy_decimals: 0
+    icon: mdi:food-apple
+    unit_of_measurement: portions
+    lambda: return id(portions_dispensed_today);
+
+button:
+  - platform: template
+    on_press: 
+      - script.execute: 
+          id: dispense_food
+          portions: !lambda return id(dispense_food_portions).state;
+    name: "Dispense Food"
+    icon: mdi:food-apple
+  - platform: "miot"
+    miot_siid: 8
+    miot_aiid: 1
+    name: "Reset Clean Timer"
+    icon: mdi:restart
+  - platform: "miot"
+    miot_siid: 11
+    miot_aiid: 1
+    name: "Reset Dessicant Timer"
+    icon: mdi:restart
+
+event:
+  # Combined feed event
+  - platform: "template"
+    name: 'Feed Event'
+    id: feed_event
+    event_types:
+      - 'start'
+      - 'stats'
+      - 'success'
+    icon: mdi:food-apple
+  - platform: "miot"
+    miot_siid: 4
+    miot_eiid: 1
+    id: feedsuccess_event
+    event_type: feedsuccess
+    internal: true
+    on_event:
+      - event.trigger:
+          id: feed_event
+          event_type: "success"
+      - globals.set: 
+          id: portions_dispensed_today
+          value: !lambda return id(portions_dispensed_today) + id(outfood_num).state;
+      - component.update:
+          id: dispensed_today
+      # Update "Dispensed" status on the UI
+      - delay: 500ms
+      - script.execute: refresh_feed_plan
+  - platform: "miot"
+    miot_siid: 4
+    miot_eiid: 2
+    id: feedstats_event
+    event_type: feedstats
+    internal: true
+    on_event:
+      - event.trigger:
+          id: feed_event
+          event_type: "stats"
+  - platform: "miot"
+    miot_siid: 4
+    miot_eiid: 3
+    id: feedstart_event
+    event_type: feedstart
+    internal: true
+    on_event:
+      - event.trigger:
+          id: feed_event
+          event_type: "start"
+      # Update "Dispensing" status on the UI
+      - script.execute: refresh_feed_plan
+  - platform: "miot"
+    miot_siid: 9
+    miot_eiid: 1
+    id: power_loss
+    name: "Power Loss"
+    event_type: power_loss
+    icon: mdi:power-plug-off

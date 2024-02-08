@@ -100,6 +100,11 @@ void Miot::loop() {
       rx_count_ = 0;
     }
 
+    // replace unprintable chars, which is a violation of the spec
+    // seen: 0xff for missing serial numbers
+    if (c < 32 || c > 127)
+      c = '?';
+
     rx_message_[rx_count_++] = c;
     last_rx_char_timestamp_ = millis();
   }

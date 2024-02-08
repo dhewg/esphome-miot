@@ -128,14 +128,13 @@ select:
       2: "Fahrenheit"
 
 text_sensor:
-# TODO while this gets sent, it may be 20 times escaped 0xff, which makes HA crash
-#  - platform: "miot"
-#    miot_siid: 1
-#    miot_piid: 5
-#    miot_poll: false
-#    name: "Serial Number"
-#    icon: mdi:numeric
-#    entity_category: diagnostic
+  - platform: "miot"
+    miot_siid: 1
+    miot_piid: 5
+    miot_poll: false
+    name: "Serial Number"
+    icon: mdi:numeric
+    entity_category: diagnostic
   - platform: "miot"
     miot_siid: 2
     miot_piid: 2

@@ -1,14 +1,19 @@
 from esphome.components import button
 import esphome.config_validation as cv
 import esphome.codegen as cg
-from .. import miot_ns, CONF_MIOT_ID, CONF_MIOT_SIID, Miot
+from .. import (
+    miot_ns,
+    CONF_MIOT_ID,
+    CONF_MIOT_SIID,
+    CONF_MIOT_AIID,
+    CONF_MIOT_ACTION_ARGS,
+    Miot
+)
 
 DEPENDENCIES = ["miot"]
 
 MiotButton = miot_ns.class_("MiotButton", button.Button, cg.Component)
 
-CONF_MIOT_AIID = "miot_aiid"
-CONF_MIOT_ACTION_ARGS = "miot_action_args"
 
 CONFIG_SCHEMA = (
     button.button_schema(MiotButton)

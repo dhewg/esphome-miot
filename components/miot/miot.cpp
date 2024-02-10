@@ -131,45 +131,49 @@ void Miot::queue_command(const std::string &cmd) {
   command_queue_.push(cmd);
 }
 
+void Miot::queue_command(const char *fmt, ...) {
+  std::string cmd;
+  va_list args;
+
+  cmd.resize(MAX_LINE_LENGTH);
+  va_start(args, fmt);
+  size_t len = vsnprintf(&cmd[0], MAX_LINE_LENGTH + 1, fmt, args);
+  va_end(args);
+  cmd.resize(len);
+  queue_command(cmd);
+}
+
 void Miot::queue_net_change_command(bool force) {
   const char *reply = get_net_reply_();
   if (!force && reply == last_net_reply_)
     return;
   ESP_LOGI(TAG, "Network status changed to '%s'", reply);
-  queue_command(std::string("MIIO_net_change ") + reply);
+  queue_command("MIIO_net_change %s", reply);
   last_net_reply_ = reply;
 }
 
 void Miot::set_property(uint32_t siid, uint32_t piid, const MiotValue &value) {
-  std::string cmd;
-
   switch (value.type) {
   case mvtInt:
-    cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %d", MAX_LINE_LENGTH, siid, piid, value.as_int);
+    queue_command("set_properties %" PRIu32 " %" PRIu32 " %d", siid, piid, value.as_int);
     break;
   case mvtUInt:
-    cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %" PRIu32, MAX_LINE_LENGTH, siid, piid, value.as_uint);
+    queue_command("set_properties %" PRIu32 " %" PRIu32 " %" PRIu32, siid, piid, value.as_uint);
     break;
   case mvtFloat:
-    cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %f", MAX_LINE_LENGTH, siid, piid, value.as_float);
+    queue_command("set_properties %" PRIu32 " %" PRIu32 " %f", siid, piid, value.as_float);
     break;
   case mvtString:
-    cmd = str_snprintf("set_properties %" PRIu32 " %" PRIu32 " %s", MAX_LINE_LENGTH, siid, piid, value.as_string.c_str());
+    queue_command("set_properties %" PRIu32 " %" PRIu32 " %s", siid, piid, value.as_string.c_str());
     break;
   }
-
-  queue_command(cmd);
 }
 
 void Miot::execute_action(uint32_t siid, uint32_t aiid, const std::string &args) {
-  std::string cmd;
-
   if (args.empty())
-    cmd = str_snprintf("action %" PRIu32 " %" PRIu32, MAX_LINE_LENGTH, siid, aiid);
+    queue_command("action %" PRIu32 " %" PRIu32, siid, aiid);
   else
-    cmd = str_snprintf("action %" PRIu32 " %" PRIu32 " %s", MAX_LINE_LENGTH, siid, aiid, args.c_str());
-
-  queue_command(cmd);
+    queue_command("action %" PRIu32 " %" PRIu32 " %s", siid, aiid, args.c_str());
 }
 
 void Miot::send_reply_(const char *reply) {

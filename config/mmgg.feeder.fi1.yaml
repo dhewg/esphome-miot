@@ -31,27 +31,24 @@ api:
   on_client_connected:
     then:
       # Refresh the feed plan when HA connects
-      - lambda: 'id(miot_main).queue_command("action 5 6 11 0");'
+      - lambda: id(miot_main).queue_command("action 5 6 11 0");
   services:
     # DEBUG ONLY: Send **arbitrary commands** to MCU from HA
     - service: mcu_command
       variables:
         command: string
       then:
-        - lambda: 'id(miot_main).queue_command(command);'
+        - lambda: id(miot_main).queue_command(command);
     # Refresh the "Raw Feed Plan" sensor on demand
     - service: get_feed_plan
       then:
-        - lambda: 'id(miot_main).queue_command("action 5 6 11 0");'
+        - lambda: id(miot_main).queue_command("action 5 6 11 0");
     # Dispense the specified amount of portions
     - service: dispense_food
       variables:
         portions: int
       then:
-        - lambda: |
-            char cmd[512];
-            snprintf(cmd, sizeof(cmd), "action 2 1 5 %i", portions);
-            id(miot_main).queue_command(cmd);
+        - lambda: id(miot_main).queue_command("action 2 1 5 %i", portions);
     # Add a new scheduled feeding time to MCU memory
     - service: add_scheduled_feed
       variables:
@@ -61,12 +58,11 @@ api:
         portions: int
       then:
         - lambda: |
-            char cmd[512];
-            snprintf(cmd, sizeof(cmd), "action 5 7 10 %i 6 %i 7 %i 8 %i",
-                     id, hour, minute, portions);
-            id(miot_main).queue_command(cmd);
-            // Manually refresh the feed plan afterwards
-            id(miot_main).queue_command("action 5 6 11 0");
+            id(miot_main).queue_command(
+              "action 5 7 10 %i 6 %i 7 %i 8 %i",
+              id, hour, minute, portions);
+        # Manually refresh the feed plan afterwards
+        - lambda: id(miot_main).queue_command("action 5 6 11 0");
     # Edit a scheduled feeding time in MCU memory
     - service: edit_scheduled_feed
       variables:
@@ -76,23 +72,19 @@ api:
         portions: int
       then:
         - lambda: |
-            char cmd[512];
-            snprintf(cmd, sizeof(cmd), "action 5 8 10 %i 6 %i 7 %i 8 %i",
-                     id, hour, minute, portions);
-            id(miot_main).queue_command(cmd);
-            // Manually refresh the feed plan afterwards
-            id(miot_main).queue_command("action 5 6 11 0");
+            id(miot_main).queue_command(
+              "action 5 8 10 %i 6 %i 7 %i 8 %i",
+              id, hour, minute, portions);
+        # Manually refresh the feed plan afterwards
+        - lambda: id(miot_main).queue_command("action 5 6 11 0");
     # Remove a scheduled feeding time from MCU memory
     - service: remove_scheduled_feed
       variables:
         id: int
       then:
-        - lambda: |
-            char cmd[512];
-            snprintf(cmd, sizeof(cmd), "action 5 9 10 %i", id);
-            id(miot_main).queue_command(cmd);
-            // Manually refresh the feed plan afterwards
-            id(miot_main).queue_command("action 5 6 11 0");
+        - lambda: id(miot_main).queue_command("action 5 9 10 %i", id);
+        # Manually refresh the feed plan afterwards
+        - lambda: id(miot_main).queue_command("action 5 6 11 0");
 
 ota:
   password: !secret feeder_ota_password

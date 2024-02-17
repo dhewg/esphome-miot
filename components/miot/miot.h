@@ -75,7 +75,7 @@ class Miot : public Component, public uart::UARTDevice {
 
  protected:
   const char *get_net_reply_();
-  std::string get_time_reply_(char **saveptr);
+  std::string get_time_reply_(bool posix);
   void send_reply_(const char *reply);
   void update_property(uint32_t siid, uint32_t piid, const char *value);
   void update_properties(char **saveptr, MiotResultFormat format);

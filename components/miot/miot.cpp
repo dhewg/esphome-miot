@@ -274,25 +274,21 @@ const char *Miot::get_net_reply_() {
   return NET_OFFLINE;
 }
 
-std::string Miot::get_time_reply_(char **saveptr) {
+std::string Miot::get_time_reply_(bool posix) {
 #ifdef USE_TIME
   if (!time_->now().is_valid()) {
     ESP_LOGW(TAG, "MCU time request: time source not ready yet");
     return "0";
   }
 
-  const StringRef format(strtok_r(nullptr, " ", saveptr));
-  if (format == "") {
-    std::string formatted_time = this->time_->now().strftime("%Y-%m-%d %H:%M:%S");
-    ESP_LOGD(TAG, "MCU time request: sending time \"%s\"", formatted_time.c_str());
-    return formatted_time;
-  } else if (format == "posix") {
-    std::string posix_time = this->time_->utcnow().strftime("%s");
+  if (posix) {
+    std::string posix_time = time_->utcnow().strftime("%s");
     ESP_LOGD(TAG, "MCU time request: sending posix time \"%s\"", posix_time.c_str());
     return posix_time;
   } else {
-    ESP_LOGW(TAG, "MCU time request: unknown request format \"%s\"", format);
-    return "0";
+    std::string formatted_time = time_->now().strftime("%Y-%m-%d %H:%M:%S");
+    ESP_LOGD(TAG, "MCU time request: sending time \"%s\"", formatted_time.c_str());
+    return formatted_time;
   }
 #else
     ESP_LOGW(TAG, "MCU time request: no time source available");
@@ -324,7 +320,7 @@ void Miot::process_message_(char *msg) {
   } else if (cmd == "net") {
     send_reply_(get_net_reply_());
   } else if (cmd == "time") {
-    send_reply_(get_time_reply_(&saveptr).c_str());
+    send_reply_(get_time_reply_(std::strcmp(strtok_r(nullptr, " ", &saveptr), "posix") == 0).c_str());
   } else if (cmd == "mac") {
     send_reply_(get_mac_address().c_str());
   } else if (cmd == "model") {

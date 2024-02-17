@@ -117,7 +117,7 @@ void Miot::dump_config() {
   if (!mcu_version_.empty())
     ESP_LOGCONFIG(TAG, "  MCU Version: %s", mcu_version_.c_str());
 #ifdef USE_TIME
-    ESP_LOGCONFIG(TAG, "  Time: %s", YESNO(time_ != nullptr));
+    ESP_LOGCONFIG(TAG, "  Time: AVAILABLE");
 #else 
     ESP_LOGCONFIG(TAG, "  Time: UNAVAILABLE");
 #endif

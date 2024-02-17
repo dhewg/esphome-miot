@@ -119,7 +119,7 @@ void Miot::dump_config() {
 #ifdef USE_TIME
     ESP_LOGCONFIG(TAG, "  Time: %s", YESNO(time_ != nullptr));
 #else 
-    ESP_LOGCONFIG(TAG, "  Time: UNAVAILABLE";
+    ESP_LOGCONFIG(TAG, "  Time: UNAVAILABLE");
 #endif
 }
 

@@ -116,6 +116,11 @@ void Miot::dump_config() {
     ESP_LOGCONFIG(TAG, "  Model: %s", model_.c_str());
   if (!mcu_version_.empty())
     ESP_LOGCONFIG(TAG, "  MCU Version: %s", mcu_version_.c_str());
+#ifdef USE_TIME
+    ESP_LOGCONFIG(TAG, "  Time: %s", YESNO(time_ != nullptr));
+#else 
+    ESP_LOGCONFIG(TAG, "  Time: UNAVAILABLE";
+#endif
 }
 
 void Miot::register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueType type, const std::function<void(const MiotValue &value)> &func) {
@@ -269,6 +274,37 @@ const char *Miot::get_net_reply_() {
   return NET_OFFLINE;
 }
 
+std::string Miot::get_time_reply_(char **saveptr) {
+#ifdef USE_TIME
+  if (this->time_ == nullptr) {
+    ESP_LOGW(TAG, "MCU time request: time source available but not configured");
+    return "0";
+  }
+
+  if (!time_->now().is_valid()) {
+    ESP_LOGW(TAG, "MCU time request: time source not ready yet");
+    return "0";
+  }
+
+  const StringRef format(strtok_r(nullptr, " ", saveptr));
+  if (format == "") {
+    std::string formatted_time = this->time_->now().strftime("%Y-%m-%d %H:%M:%S");
+    ESP_LOGD(TAG, "MCU time request: sending time \"%s\"", formatted_time.c_str());
+    return formatted_time;
+  } else if (format == "posix") {
+    std::string posix_time = this->time_->utcnow().strftime("%s");
+    ESP_LOGD(TAG, "MCU time request: sending posix time \"%s\"", posix_time.c_str());
+    return posix_time;
+  } else {
+    ESP_LOGW(TAG, "MCU time request: unknown request format \"%s\"", format);
+    return "0";
+  }
+#else
+    ESP_LOGW(TAG, "MCU time request: no time source available");
+    return "0";
+#endif
+}
+
 void Miot::process_message_(char *msg) {
   char *saveptr = nullptr;
   const StringRef cmd(strtok_r(msg, " ", &saveptr));
@@ -293,7 +329,7 @@ void Miot::process_message_(char *msg) {
   } else if (cmd == "net") {
     send_reply_(get_net_reply_());
   } else if (cmd == "time") {
-    send_reply_("0"); // TODO
+    send_reply_(get_time_reply_(&saveptr).c_str());
   } else if (cmd == "mac") {
     send_reply_(get_mac_address().c_str());
   } else if (cmd == "model") {

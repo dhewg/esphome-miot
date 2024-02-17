@@ -276,11 +276,6 @@ const char *Miot::get_net_reply_() {
 
 std::string Miot::get_time_reply_(char **saveptr) {
 #ifdef USE_TIME
-  if (this->time_ == nullptr) {
-    ESP_LOGW(TAG, "MCU time request: time source available but not configured");
-    return "0";
-  }
-
   if (!time_->now().is_valid()) {
     ESP_LOGW(TAG, "MCU time request: time source not ready yet");
     return "0";

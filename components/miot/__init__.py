@@ -1,7 +1,7 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import uart, time
-from esphome.const import CONF_ID, CONF_TIME_ID
+from esphome.components import uart
+from esphome.const import CONF_ID
 
 DEPENDENCIES = ["uart"]
 
@@ -30,7 +30,6 @@ CONFIG_SCHEMA = cv.All(
             cv.GenerateID(): cv.declare_id(Miot),
             cv.Optional(CONF_MIOT_HEARTBEAT_SIID): cv.uint32_t,
             cv.Optional(CONF_MIOT_HEARTBEAT_PIID): cv.uint32_t,
-            cv.Optional(cv.GenerateID(CONF_TIME_ID)): cv.use_id(time.RealTimeClock),
         }
     )
     .extend(cv.COMPONENT_SCHEMA)
@@ -44,8 +43,5 @@ async def to_code(config):
     await uart.register_uart_device(var, config)
     if (CONF_MIOT_HEARTBEAT_SIID in config) and (CONF_MIOT_HEARTBEAT_PIID in config):
         cg.add(var.set_heartbeat_config(config[CONF_MIOT_HEARTBEAT_SIID], config[CONF_MIOT_HEARTBEAT_PIID]))
-    if (CONF_TIME_ID in config):
-        time_ = await cg.get_variable(config[CONF_TIME_ID])
-        cg.add(var.set_time(time_))
 
     cg.add_define("USE_OTA_STATE_CALLBACK")

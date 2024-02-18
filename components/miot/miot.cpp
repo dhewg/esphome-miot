@@ -18,6 +18,10 @@
 #include "esphome/components/ota/ota_component.h"
 #endif
 
+#ifdef USE_TIME
+#include "esphome/components/time/real_time_clock.h"
+#endif
+
 /*
  * TODO
  * add "access" to components? read/write/notify
@@ -276,23 +280,27 @@ const char *Miot::get_net_reply_() {
 
 std::string Miot::get_time_reply_(bool posix) {
 #ifdef USE_TIME
-  if (!time_->now().is_valid()) {
+  std::string res;
+  auto now = ESPTime::from_epoch_local(::time(nullptr));
+
+  if (now.is_valid()) {
+    if (posix) {
+      res = to_string((int64_t)now.timestamp);
+    } else {
+      res = now.strftime("%Y-%m-%d %H:%M:%S");
+    }
+  }
+
+  if (res.empty()) {
     ESP_LOGW(TAG, "MCU time request: time source not ready yet");
     return "0";
   }
 
-  if (posix) {
-    std::string posix_time = time_->utcnow().strftime("%s");
-    ESP_LOGD(TAG, "MCU time request: sending posix time \"%s\"", posix_time.c_str());
-    return posix_time;
-  } else {
-    std::string formatted_time = time_->now().strftime("%Y-%m-%d %H:%M:%S");
-    ESP_LOGD(TAG, "MCU time request: sending time \"%s\"", formatted_time.c_str());
-    return formatted_time;
-  }
+  ESP_LOGD(TAG, "MCU time request: sending time \"%s\"", res.c_str());
+  return res;
 #else
-    ESP_LOGW(TAG, "MCU time request: no time source available");
-    return "0";
+  ESP_LOGW(TAG, "MCU time request: no time source available");
+  return "0";
 #endif
 }
 
@@ -320,7 +328,8 @@ void Miot::process_message_(char *msg) {
   } else if (cmd == "net") {
     send_reply_(get_net_reply_());
   } else if (cmd == "time") {
-    send_reply_(get_time_reply_(std::strcmp(strtok_r(nullptr, " ", &saveptr), "posix") == 0).c_str());
+    bool posix = std::strcmp(strtok_r(nullptr, " ", &saveptr), "posix") == 0;
+    send_reply_(get_time_reply_(posix).c_str());
   } else if (cmd == "mac") {
     send_reply_(get_mac_address().c_str());
   } else if (cmd == "model") {

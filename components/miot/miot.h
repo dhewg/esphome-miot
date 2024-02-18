@@ -7,10 +7,6 @@
 
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
-#ifdef USE_TIME
-#include "esphome/components/time/real_time_clock.h"
-#include "esphome/core/time.h"
-#endif
 
 namespace esphome {
 namespace miot {
@@ -61,11 +57,6 @@ class Miot : public Component, public uart::UARTDevice {
     this->heartbeat_siid_ = siid;
     this->heartbeat_piid_ = piid;
   };
-#ifdef USE_TIME
-  void set_time(time::RealTimeClock *time) { 
-    this->time_ = time; 
-  };
-#endif
   void register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueType type, const std::function<void(const MiotValue &value)> &func);
   void queue_command(const std::string &cmd);
   void queue_command(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
@@ -93,9 +84,6 @@ class Miot : public Component, public uart::UARTDevice {
   bool expect_action_result_{false};
   uint32_t heartbeat_siid_{0};
   uint32_t heartbeat_piid_{0};
-#ifdef USE_TIME
-  time::RealTimeClock *time_{nullptr};
-#endif
   std::map<std::pair<uint32_t, uint32_t>, MiotListener> listeners_;
 };
 

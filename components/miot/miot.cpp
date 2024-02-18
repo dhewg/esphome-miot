@@ -121,9 +121,9 @@ void Miot::dump_config() {
   if (!mcu_version_.empty())
     ESP_LOGCONFIG(TAG, "  MCU Version: %s", mcu_version_.c_str());
 #ifdef USE_TIME
-    ESP_LOGCONFIG(TAG, "  Time: AVAILABLE");
-#else 
-    ESP_LOGCONFIG(TAG, "  Time: UNAVAILABLE");
+  ESP_LOGCONFIG(TAG, "  Time: AVAILABLE");
+#else
+  ESP_LOGCONFIG(TAG, "  Time: UNAVAILABLE");
 #endif
 }
 
@@ -280,24 +280,17 @@ const char *Miot::get_net_reply_() {
 
 std::string Miot::get_time_reply_(bool posix) {
 #ifdef USE_TIME
-  std::string res;
   auto now = ESPTime::from_epoch_local(::time(nullptr));
 
-  if (now.is_valid()) {
-    if (posix) {
-      res = to_string((int64_t)now.timestamp);
-    } else {
-      res = now.strftime("%Y-%m-%d %H:%M:%S");
-    }
-  }
-
-  if (res.empty()) {
+  if (!now.is_valid()) {
     ESP_LOGW(TAG, "MCU time request: time source not ready yet");
     return "0";
   }
 
-  ESP_LOGD(TAG, "MCU time request: sending time \"%s\"", res.c_str());
-  return res;
+  if (posix)
+    return to_string((int64_t)now.timestamp);
+
+  return now.strftime("%Y-%m-%d %H:%M:%S");
 #else
   ESP_LOGW(TAG, "MCU time request: no time source available");
   return "0";

@@ -39,5 +39,11 @@ For examples, see the [supported devices](#supported-devices) table above and co
 
 Once your newly added device is working, please open a PR to add its config here!
 
+## Feedback
+
+Please feel free to open [issues](../../issues) and/or [pull requests](../../pulls) here.
+
+Alternatively, there's a [thread](https://community.home-assistant.io/t/esphome-components-for-miot-devices/686646) on the official ESPHome forums.
+
 ## Inspired by
 https://github.com/jaromeyer/mipurifier-esphome

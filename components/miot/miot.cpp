@@ -321,7 +321,8 @@ void Miot::process_message_(char *msg) {
   } else if (cmd == "net") {
     send_reply_(get_net_reply_());
   } else if (cmd == "time") {
-    bool posix = std::strcmp(strtok_r(nullptr, " ", &saveptr), "posix") == 0;
+    const char *arg = strtok_r(nullptr, " ", &saveptr);
+    bool posix = arg && *arg && std::strcmp(arg, "posix") == 0;
     send_reply_(get_time_reply_(posix).c_str());
   } else if (cmd == "mac") {
     send_reply_(get_mac_address().c_str());

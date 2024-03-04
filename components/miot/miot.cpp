@@ -95,7 +95,7 @@ void Miot::loop() {
       ESP_LOGV(TAG, "Received MCU message '%s'", rx_message_);
       process_message_(rx_message_);
       rx_count_ = 0;
-      continue;
+      break;
     }
 
     if (rx_count_ >= MAX_LINE_LENGTH) {

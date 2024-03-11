@@ -1,4 +1,5 @@
 # https://home.miot-spec.com/spec/zhimi.airp.mb4a
+# https://home.miot-spec.com/spec/zhimi.airpurifier.mb4
 
 external_components:
   source: github://dhewg/esphome-miot@main

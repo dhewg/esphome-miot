@@ -221,8 +221,9 @@ void Miot::update_property(uint32_t siid, uint32_t piid, const char *value) {
 // mrfNotify: properties_changed <siid> <piid> <value> ... <siid> <piid> <value>
 // mrfSet: result <siid> <piid> <code> ... <siid> <piid> <code>
 // mrfAction: result <siid> <aiid> <code> <piid> <value> ... <piid> <value>
+// mrfEvent: event_occurred <siid> <eiid> <piid> <value> ... <piid> <value>
 void Miot::update_properties(char **saveptr, MiotResultFormat format) {
-  const char *siid = nullptr, *piid = nullptr, *aiid, *code = nullptr, *value;
+  const char *siid = nullptr, *piid = nullptr, *aiid, *eiid, *code = nullptr, *value;
   const char *delim = " ";
 
   if (format == mrfAction) {
@@ -238,10 +239,17 @@ void Miot::update_properties(char **saveptr, MiotResultFormat format) {
     }
   }
 
+  if (format == mrfEvent) {
+    if (!(siid = strtok_r(nullptr, delim, saveptr)))
+      return;
+    if (!(eiid = strtok_r(nullptr, delim, saveptr)))
+      return;
+  }
+
   while (true) {
     delim = " ";
 
-    if (format != mrfAction)
+    if (format != mrfAction && format != mrfEvent)
       if (!(siid = strtok_r(nullptr, delim, saveptr)))
         break;
     if (!(piid = strtok_r(nullptr, delim, saveptr)))
@@ -314,6 +322,10 @@ void Miot::process_message_(char *msg) {
     }
   } else if (cmd == "properties_changed") {
     update_properties(&saveptr, mrfNotify);
+    send_reply_("ok");
+  } else if (cmd == "event_occured") {
+    // TODO: add event trigger for automations
+    update_properties(&saveptr, mrfEvent);
     send_reply_("ok");
   } else if (cmd == "result") {
     update_properties(&saveptr, expect_action_result_ ? mrfAction : mrfSet);

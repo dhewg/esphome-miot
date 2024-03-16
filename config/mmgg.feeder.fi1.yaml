@@ -40,7 +40,7 @@ api:
       then:
         - lambda: id(miot_main).queue_command(command);
     # Refresh the "Raw Feed Plan" sensor on demand
-    - service: get_feed_plan
+    - service: refresh_feed_plan
       then:
         - lambda: id(miot_main).execute_action(5, 6, "11 0");
     # Dispense the specified amount of portions
@@ -175,11 +175,22 @@ text_sensor:
   - platform: "miot"
     miot_siid: 4
     miot_piid: 5
-    name: "Last Feed Source ID"
+    name: "Last Feed Source"
     icon: mdi:food-apple
+    miot_poll: false
     filters:
       - map:
-        - "255 -> Manual"
+        - "0 -> Schedule 0"
+        - "1 -> Schedule 1"
+        - "2 -> Schedule 2"
+        - "3 -> Schedule 3"
+        - "4 -> Schedule 4"
+        - "5 -> Schedule 5"
+        - "6 -> Schedule 6"
+        - "7 -> Schedule 7"
+        - "8 -> Schedule 8"
+        - "9 -> Schedule 9"
+        - "255 -> Manual Feed"
   # FeedID,Hour,Minute,Portions,(Dispensed=0,Pending=255) x5
   - platform: "miot"
     miot_siid: 5
@@ -215,6 +226,7 @@ sensor:
     miot_piid: 4
     name: "Last Feed Portions"
     icon: mdi:food-apple
+    miot_poll: false
   - platform: "miot"
     miot_siid: 8
     miot_piid: 1

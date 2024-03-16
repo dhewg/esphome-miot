@@ -44,6 +44,7 @@ enum MiotResultFormat {
   mrfNotify,
   mrfSet,
   mrfAction,
+  mrfEvent,
 };
 
 class Miot : public Component, public uart::UARTDevice {

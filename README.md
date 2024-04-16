@@ -19,11 +19,20 @@ There are probably many more devices that could be supported, currently there ar
 
 Device | Model Version | Wiki | ESPHome Config | MIoT Specification
 ---|---|---|---|---
+Mi Air Purifier 3H | zhimi.airpurifier.mb3 | [link](../../wiki/Xiaomi-Mi-Air-Purifier-3H) | [zhimi.airpurifier.mb3](config/zhimi.airpurifier.mb3.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airpurifier.mb3)
 Mi Air Purifier 3C | zhimi.airp.mb4a <br> zhimi.airpurifier.mb4 |[link](../../wiki/Xiaomi-Mi-Air-Purifier-3C) | [zhimi.airp.mb4a](config/zhimi.airp.mb4a.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb4a) <br> [link](https://home.miot-spec.com/spec/zhimi.airpurifier.mb4)
 Xiaomi Smart Air Purifier 4 | zhimi.airp.mb5 | [link](../../wiki/Xiaomi-Smart-Air-Purifier-4) | [zhimi.airp.mb5](config/zhimi.airp.mb5.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb5)
 Xiaomi Smart Air Purifier 4 Lite | zhimi.airp.rmb1 | [link](../../wiki/Xiaomi-Smart-Air-Purifier-4-Lite-(zhimi.airp.rmb1)) | [zhimi.airp.rmb1](config/zhimi.airp.rmb1.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.rmb1)
 
 Some of the devices has more than one model versions (like Mi Air Purifier 3C). If their MIoT specifications are identical, the ESPHome config will be compatible with all of them.
+
+## Not supported devices
+
+Some devices have Xiaomi proprietary chip instead of ESP32 chip. Those devices are not supported.
+
+Device | Model Version | Wiki | MIoT Specification
+---|---|---|---
+Mi Air Purifier 2S | zhimi.airpurifier.mc1 | [link](../../wiki/Xiaomi-Mi-Air-Purifier-2S)|[link](https://home.miot-spec.com/spec/zhimi.airpurifier.mc1)
 
 ## Building a firmware
 

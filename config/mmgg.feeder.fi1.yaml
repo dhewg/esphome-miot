@@ -1,8 +1,11 @@
 # https://home.miot-spec.com/spec/mmgg.feeder.fi1
-# TODO: Currently only supports displaying 5 programmed feed plans instead of the full 10
-# TODO: Currently only supports displaying programmed feed plans in raw form
+# TODO: Automatically adjust "phon-timezone" based on home assistant time for DST.
 external_components:
   source: github://dhewg/esphome-miot@main
+
+globals:
+  - id: schedule
+    type: std::map<std::string, std::string>
 
 substitutions:
   # "Dispense Food" button portions (1 ~ 30).
@@ -20,12 +23,18 @@ time:
   - platform: homeassistant
     id: homeassistant_time
     timezone: GMT0
+    on_time: 
+      cron: "0 1 0 * * *"
+      then: 
+        # Refresh the feed plan status at midnight + 1min buffer
+        - lambda: id(miot_main).execute_action(5, 6, "11 0");
+        - lambda: id(miot_main).execute_action(5, 6, "11 1");
 
 esp8266:
   board: esp_wroom_02
 
 logger:
-  level: VERBOSE
+  level: DEBUG
   # Important: Disable UART1 logging to avoid hardware errors on main UART0
   baud_rate: 0
 
@@ -37,6 +46,7 @@ api:
     then:
       # Refresh the feed plan when HA connects
       - lambda: id(miot_main).execute_action(5, 6, "11 0");
+      - lambda: id(miot_main).execute_action(5, 6, "11 1");
   services:
     # DEBUG ONLY: Send **arbitrary commands** to MCU from HA
     - service: mcu_command
@@ -48,6 +58,7 @@ api:
     - service: refresh_feed_plan
       then:
         - lambda: id(miot_main).execute_action(5, 6, "11 0");
+        - lambda: id(miot_main).execute_action(5, 6, "11 1");
     # Dispense the specified amount of portions
     - service: dispense_food
       variables:
@@ -68,6 +79,7 @@ api:
               id, hour, minute, portions);
         # Manually refresh the feed plan afterwards
         - lambda: id(miot_main).execute_action(5, 6, "11 0");
+        - lambda: id(miot_main).execute_action(5, 6, "11 1");
     # Edit a scheduled feeding time in MCU memory
     - service: edit_scheduled_feed
       variables:
@@ -82,6 +94,7 @@ api:
               id, hour, minute, portions);
         # Manually refresh the feed plan afterwards
         - lambda: id(miot_main).execute_action(5, 6, "11 0");
+        - lambda: id(miot_main).execute_action(5, 6, "11 1");
     # Remove a scheduled feeding time from MCU memory
     - service: remove_scheduled_feed
       variables:
@@ -90,6 +103,7 @@ api:
         - lambda: id(miot_main).queue_command("action 5 9 10 %i", id);
         # Manually refresh the feed plan afterwards
         - lambda: id(miot_main).execute_action(5, 6, "11 0");
+        - lambda: id(miot_main).execute_action(5, 6, "11 1");
 
 ota:
   password: !secret feeder_ota_password
@@ -196,20 +210,56 @@ text_sensor:
         - "8 -> Schedule 8"
         - "9 -> Schedule 9"
         - "255 -> Manual Feed"
-  # FeedID,Hour,Minute,Portions,(Dispensed=0,Pending=255) x5
+  - platform: template
+    name: "Raw Feed Plan"
+    id: raw_feed_plan
+    icon: mdi:calendar-clock
+    polling_interval: never
+    entity_category: diagnostic
+    lambda: |-
+      std::string feeding_schedule;
+      for (auto &entry : id(schedule)) {
+        if (entry.second.find("255") == 0) {
+          continue; // Skip empty entries
+        }
+        feeding_schedule += entry.first + "," + entry.second + ",";
+      }
+      if (!feeding_schedule.empty()) {
+        feeding_schedule.pop_back(); // Remove the trailing comma
+      }
+      return feeding_schedule;
+  # FeedID,Hour,Minute,Portions,(Dispensed=0,Pending=255,Dispensing=254) x5
   - platform: "miot"
+    id: feedplan_string
     miot_siid: 5
     miot_piid: 12
     miot_poll: false
-    name: "Raw Feed Plan"
-    entity_category: diagnostic
-    icon: mdi:calendar
+    internal: true
+    on_value:
+      - lambda: |-
+          char* token = strtok(x.data(), ",");
+          while (token != NULL) {
+            std::string feed_id = std::string(token);
+            token = strtok(NULL, ",");
+            std::string hour = std::string(token);
+            token = strtok(NULL, ",");
+            std::string minute = std::string(token);
+            token = strtok(NULL, ",");
+            std::string portions = std::string(token);
+            token = strtok(NULL, ",");
+            std::string status = std::string(token);
+            token = strtok(NULL, ",");
+          
+            std::string details = hour + "," + minute + "," + portions + "," + status;
+            id(schedule)[feed_id] = details;
+          }
+      - lambda: id(raw_feed_plan).update();
 
 number:
   - platform: "miot"    
     miot_siid: 9
     miot_piid: 12
-    name: "Phone Timezone"
+    name: "Timezone Offset"
     icon: mdi:clock
     entity_category: config
     step: 1
@@ -223,6 +273,11 @@ sensor:
     name: "Last Feed Portions"
     icon: mdi:food-apple
     miot_poll: false
+    on_value:
+      then:
+        # Refresh feed plan status after feed event
+        - lambda: id(miot_main).execute_action(5, 6, "11 0");
+        - lambda: id(miot_main).execute_action(5, 6, "11 1");
   - platform: "miot"
     miot_siid: 8
     miot_piid: 1

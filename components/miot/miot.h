@@ -40,6 +40,12 @@ struct MiotListener {
   std::function<void(const MiotValue &value)> func;
 };
 
+#ifdef USE_EVENT
+struct MiotEventListener {
+  std::function<void()> func;
+};
+#endif
+
 enum MiotResultFormat {
   mrfNotify,
   mrfSet,
@@ -64,6 +70,9 @@ class Miot : public Component, public uart::UARTDevice {
   void queue_net_change_command(bool force);
   void set_property(uint32_t siid, uint32_t piid, const MiotValue &value);
   void execute_action(uint32_t siid, uint32_t aiid, const std::string &args);
+#ifdef USE_EVENT
+  void register_event_listener(uint32_t siid, uint32_t eiid, const std::function<void()> &func);
+#endif
 
  protected:
   const char *get_net_reply_();
@@ -72,6 +81,7 @@ class Miot : public Component, public uart::UARTDevice {
   void update_property(uint32_t siid, uint32_t piid, const char *value);
   void update_properties(char **saveptr, MiotResultFormat format);
   void process_message_(char *msg);
+  void process_event_(uint32_t siid, uint32_t eiid);
 
   static const size_t MAX_LINE_LENGTH = 512;
 
@@ -86,6 +96,10 @@ class Miot : public Component, public uart::UARTDevice {
   uint32_t heartbeat_siid_{0};
   uint32_t heartbeat_piid_{0};
   std::map<std::pair<uint32_t, uint32_t>, MiotListener> listeners_;
+#ifdef USE_EVENT
+  std::map<std::pair<uint32_t, uint32_t>, MiotEventListener> event_listeners_;
+#endif
+
 };
 
 }  // namespace miot

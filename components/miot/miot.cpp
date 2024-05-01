@@ -136,6 +136,16 @@ void Miot::register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueT
   this->listeners_[std::make_pair(siid, piid)] = MiotListener{ .poll = poll, .type = type, .func = func };
 }
 
+#ifdef USE_EVENT
+void Miot::register_event_listener(uint32_t siid, uint32_t eiid, const std::function<void()> &func) {
+  if (event_listeners_.find(std::make_pair(siid, eiid)) != event_listeners_.end()) {
+    ESP_LOGE(TAG, "Event already has a listener: %" PRIu32 " %" PRIu32, siid, eiid);
+    return;
+  }
+  this->event_listeners_[std::make_pair(siid, eiid)] = MiotEventListener{ .func = func };
+}
+#endif
+
 void Miot::queue_command(const std::string &cmd) {
   ESP_LOGD(TAG, "Queuing MCU command '%s'", cmd.c_str());
   command_queue_.push(cmd);
@@ -219,12 +229,26 @@ void Miot::update_property(uint32_t siid, uint32_t piid, const char *value) {
   }
 }
 
+void Miot::process_event_(uint32_t siid, uint32_t eiid) {
+#ifdef USE_EVENT
+  auto it = event_listeners_.find(std::make_pair(siid, eiid));
+  if (it == event_listeners_.end()) {
+    ESP_LOGW(TAG, "Received event without component: %" PRIu32 " %" PRIu32, siid, eiid);
+    return;
+  }
+
+  (*it).second.func();
+#else
+  ESP_LOGW(TAG, "Received event without component: %" PRIu32 " %" PRIu32, siid, eiid);
+#endif
+}
+
 // mrfNotify: properties_changed <siid> <piid> <value> ... <siid> <piid> <value>
 // mrfSet: result <siid> <piid> <code> ... <siid> <piid> <code>
 // mrfAction: result <siid> <aiid> <code> <piid> <value> ... <piid> <value>
 // mrfEvent: event_occurred <siid> <eiid> <piid> <value> ... <piid> <value>
 void Miot::update_properties(char **saveptr, MiotResultFormat format) {
-  const char *siid = nullptr, *piid = nullptr, *aiid, *eiid, *code = nullptr, *value;
+  const char *siid = nullptr, *piid = nullptr, *aiid, *eiid = nullptr, *code = nullptr, *value;
   const char *delim = " ";
 
   if (format == mrfAction) {
@@ -270,6 +294,11 @@ void Miot::update_properties(char **saveptr, MiotResultFormat format) {
       break;
 
     update_property(parse_number<uint32_t>(siid).value_or(0u), parse_number<uint32_t>(piid).value_or(0u), value);
+  }
+
+  if (format == mrfEvent) {
+    // send event after all properties have been updated
+    process_event_(parse_number<uint32_t>(siid).value_or(0u), parse_number<uint32_t>(eiid).value_or(0u));
   }
 }
 
@@ -325,7 +354,6 @@ void Miot::process_message_(char *msg) {
     update_properties(&saveptr, mrfNotify);
     send_reply_("ok");
   } else if (cmd == "event_occured") {
-    // TODO: add event trigger for automations
     update_properties(&saveptr, mrfEvent);
     send_reply_("ok");
   } else if (cmd == "result") {

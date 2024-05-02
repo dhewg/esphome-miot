@@ -6,6 +6,10 @@ external_components:
 globals:
   - id: schedule
     type: std::map<std::string, std::string>
+  - id: portions_dispensed_today
+    type: int
+    restore_value: True
+    initial_value: "0"
 
 substitutions:
   # "Dispense Food" button portions (1 ~ 30).
@@ -30,10 +34,15 @@ time:
     id: homeassistant_time
     timezone: GMT0
     on_time: 
-      cron: "0 1 0 * * *"
-      then: 
-        # Refresh the feed plan status at midnight + 1min buffer
-        - execute-script: refresh_feed_plan
+      # Every day at 00:01:00
+      - hours: 0
+        minutes: 1 # buffer to make sure MCU schedule has been refreshed
+        seconds: 0
+        then:
+          - execute-script: refresh_feed_plan
+          - globals.set: 
+              id: portions_dispensed_today
+              value: "0"
 
 esp8266:
   board: esp_wroom_02
@@ -191,6 +200,7 @@ text_sensor:
   - platform: "miot"
     miot_siid: 4
     miot_piid: 5
+    id: outfood_num
     name: "Last Feed Source"
     icon: mdi:food-apple
     miot_poll: false
@@ -288,6 +298,11 @@ sensor:
     name: "Device Country"
     icon: mdi:clock
     entity_category: diagnostic
+  - platform: "template"
+    name: "Portions Dispensed Today"
+    id: portions_dispensed_today_sensor
+    accuracy_decimals: 0
+    lambda: return id(portions_dispensed_today);
 
 button:
   - platform: "miot"
@@ -325,6 +340,11 @@ event:
       - event.trigger:
           id: feed_event
           event_type: "success"
+      - globals.set: 
+          id: portions_dispensed_today
+          value: !lambda return id(portions_dispensed_today) + id(outfood_num).state;
+      - component.update:
+          id: portions_dispensed_today_sensor
       # Update "Dispensed" status on the UI
       - delay: 500ms
       - execute-script: refresh_feed_plan

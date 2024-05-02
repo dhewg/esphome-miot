@@ -11,6 +11,12 @@ substitutions:
   # "Dispense Food" button portions (1 ~ 30).
   dispense_food_portions: "1"
 
+scripts:
+  - id: refresh_feed_plan
+    then:
+      - lambda: id(miot_main).execute_action(5, 6, "11 0");
+      - lambda: id(miot_main).execute_action(5, 6, "11 1");
+
 esphome:
   name: feeder
   friendly_name: Pet Feeder
@@ -27,8 +33,7 @@ time:
       cron: "0 1 0 * * *"
       then: 
         # Refresh the feed plan status at midnight + 1min buffer
-        - lambda: id(miot_main).execute_action(5, 6, "11 0");
-        - lambda: id(miot_main).execute_action(5, 6, "11 1");
+        - execute-script: refresh_feed_plan
 
 esp8266:
   board: esp_wroom_02
@@ -45,8 +50,7 @@ api:
   on_client_connected:
     then:
       # Refresh the feed plan when HA connects
-      - lambda: id(miot_main).execute_action(5, 6, "11 0");
-      - lambda: id(miot_main).execute_action(5, 6, "11 1");
+      - execute-script: refresh_feed_plan
   services:
     # DEBUG ONLY: Send **arbitrary commands** to MCU from HA
     - service: mcu_command
@@ -57,8 +61,7 @@ api:
     # Refresh the "Raw Feed Plan" sensor on demand
     - service: refresh_feed_plan
       then:
-        - lambda: id(miot_main).execute_action(5, 6, "11 0");
-        - lambda: id(miot_main).execute_action(5, 6, "11 1");
+        - execute-script: refresh_feed_plan
     # Dispense the specified amount of portions
     - service: dispense_food
       variables:
@@ -77,9 +80,7 @@ api:
             id(miot_main).queue_command(
               "action 5 7 10 %i 6 %i 7 %i 8 %i",
               id, hour, minute, portions);
-        # Manually refresh the feed plan afterwards
-        - lambda: id(miot_main).execute_action(5, 6, "11 0");
-        - lambda: id(miot_main).execute_action(5, 6, "11 1");
+        - execute-script: refresh_feed_plan
     # Edit a scheduled feeding time in MCU memory
     - service: edit_scheduled_feed
       variables:
@@ -92,18 +93,14 @@ api:
             id(miot_main).queue_command(
               "action 5 8 10 %i 6 %i 7 %i 8 %i",
               id, hour, minute, portions);
-        # Manually refresh the feed plan afterwards
-        - lambda: id(miot_main).execute_action(5, 6, "11 0");
-        - lambda: id(miot_main).execute_action(5, 6, "11 1");
+        - execute-script: refresh_feed_plan
     # Remove a scheduled feeding time from MCU memory
     - service: remove_scheduled_feed
       variables:
         id: int
       then:
         - lambda: id(miot_main).queue_command("action 5 9 10 %i", id);
-        # Manually refresh the feed plan afterwards
-        - lambda: id(miot_main).execute_action(5, 6, "11 0");
-        - lambda: id(miot_main).execute_action(5, 6, "11 1");
+        - execute-script: refresh_feed_plan
 
 ota:
   password: !secret feeder_ota_password
@@ -275,9 +272,7 @@ sensor:
     miot_poll: false
     on_value:
       then:
-        # Refresh feed plan status after feed event
-        - lambda: id(miot_main).execute_action(5, 6, "11 0");
-        - lambda: id(miot_main).execute_action(5, 6, "11 1");
+        - execute-script: refresh_feed_plan
   - platform: "miot"
     miot_siid: 8
     miot_piid: 1

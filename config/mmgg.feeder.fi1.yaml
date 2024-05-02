@@ -270,9 +270,6 @@ sensor:
     name: "Last Feed Portions"
     icon: mdi:food-apple
     miot_poll: false
-    on_value:
-      then:
-        - execute-script: refresh_feed_plan
   - platform: "miot"
     miot_siid: 8
     miot_piid: 1
@@ -309,3 +306,45 @@ button:
     miot_aiid: 1
     name: "Reset Dessicant Timer"
     icon: mdi:restart
+
+event:
+  # Combined feed event
+  - platform: "template"
+    name: 'Feed Event'
+    id: feed_event
+    event_types:
+      - 'start'
+      - 'stats'
+      - 'success'
+  - platform: "miot"
+    miot_siid: 4
+    miot_eiid: 1
+    event_type: feedsuccess
+    internal: true
+    on_event:
+      - event.trigger:
+          id: feed_event
+          event_type: "success"
+      # Update "Dispensed" status on the UI
+      - delay: 500ms
+      - execute-script: refresh_feed_plan
+  - platform: "miot"
+    miot_siid: 4
+    miot_eiid: 2
+    event_type: feedstats
+    internal: true
+    on_event:
+      - event.trigger:
+          id: feed_event
+          event_type: "stats"
+  - platform: "miot"
+    miot_siid: 4
+    miot_eiid: 3
+    event_type: feedstart
+    internal: true
+    on_event:
+      - event.trigger:
+          id: feed_event
+          event_type: "start"
+      # Update "Dispensing" status on the UI
+      - execute-script: refresh_feed_plan

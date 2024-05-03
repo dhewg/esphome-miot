@@ -200,7 +200,6 @@ text_sensor:
   - platform: "miot"
     miot_siid: 4
     miot_piid: 5
-    id: outfood_num
     name: "Last Feed Source"
     icon: mdi:food-apple
     miot_poll: false
@@ -278,6 +277,7 @@ sensor:
     miot_siid: 4
     miot_piid: 4
     name: "Last Feed Portions"
+    id: outfood_num
     icon: mdi:food-apple
     miot_poll: false
   - platform: "miot"
@@ -331,6 +331,7 @@ event:
       - 'start'
       - 'stats'
       - 'success'
+    icon: mdi:food-apple
   - platform: "miot"
     miot_siid: 4
     miot_eiid: 1
@@ -377,3 +378,4 @@ event:
     id: power_loss
     name: "Power Loss"
     event_type: power_loss
+    icon: mdi:power-plug-off

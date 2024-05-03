@@ -15,7 +15,7 @@ substitutions:
   # "Dispense Food" button portions (1 ~ 30).
   dispense_food_portions: "1"
 
-scripts:
+script:
   - id: refresh_feed_plan
     then:
       - lambda: id(miot_main).execute_action(5, 6, "11 0");
@@ -39,7 +39,7 @@ time:
         minutes: 1 # buffer to make sure MCU schedule has been refreshed
         seconds: 0
         then:
-          - execute-script: refresh_feed_plan
+          - script.execute: refresh_feed_plan
           - globals.set: 
               id: portions_dispensed_today
               value: "0"
@@ -59,7 +59,7 @@ api:
   on_client_connected:
     then:
       # Refresh the feed plan when HA connects
-      - execute-script: refresh_feed_plan
+      - script.execute: refresh_feed_plan
   services:
     # DEBUG ONLY: Send **arbitrary commands** to MCU from HA
     - service: mcu_command
@@ -70,7 +70,7 @@ api:
     # Refresh the "Raw Feed Plan" sensor on demand
     - service: refresh_feed_plan
       then:
-        - execute-script: refresh_feed_plan
+        - script.execute: refresh_feed_plan
     # Dispense the specified amount of portions
     - service: dispense_food
       variables:
@@ -89,7 +89,7 @@ api:
             id(miot_main).queue_command(
               "action 5 7 10 %i 6 %i 7 %i 8 %i",
               id, hour, minute, portions);
-        - execute-script: refresh_feed_plan
+        - script.execute: refresh_feed_plan
     # Edit a scheduled feeding time in MCU memory
     - service: edit_scheduled_feed
       variables:
@@ -102,14 +102,14 @@ api:
             id(miot_main).queue_command(
               "action 5 8 10 %i 6 %i 7 %i 8 %i",
               id, hour, minute, portions);
-        - execute-script: refresh_feed_plan
+        - script.execute: refresh_feed_plan
     # Remove a scheduled feeding time from MCU memory
     - service: remove_scheduled_feed
       variables:
         id: int
       then:
         - lambda: id(miot_main).queue_command("action 5 9 10 %i", id);
-        - execute-script: refresh_feed_plan
+        - script.execute: refresh_feed_plan
 
 ota:
   password: !secret feeder_ota_password
@@ -221,7 +221,7 @@ text_sensor:
     name: "Raw Feed Plan"
     id: raw_feed_plan
     icon: mdi:calendar-clock
-    polling_interval: never
+    update_interval: never
     entity_category: diagnostic
     lambda: |-
       std::string feeding_schedule;
@@ -334,6 +334,7 @@ event:
   - platform: "miot"
     miot_siid: 4
     miot_eiid: 1
+    id: feedsuccess_event
     event_type: feedsuccess
     internal: true
     on_event:
@@ -347,10 +348,11 @@ event:
           id: portions_dispensed_today_sensor
       # Update "Dispensed" status on the UI
       - delay: 500ms
-      - execute-script: refresh_feed_plan
+      - script.execute: refresh_feed_plan
   - platform: "miot"
     miot_siid: 4
     miot_eiid: 2
+    id: feedstats_event
     event_type: feedstats
     internal: true
     on_event:
@@ -360,6 +362,7 @@ event:
   - platform: "miot"
     miot_siid: 4
     miot_eiid: 3
+    id: feedstart_event
     event_type: feedstart
     internal: true
     on_event:
@@ -367,4 +370,4 @@ event:
           id: feed_event
           event_type: "start"
       # Update "Dispensing" status on the UI
-      - execute-script: refresh_feed_plan
+      - script.execute: refresh_feed_plan

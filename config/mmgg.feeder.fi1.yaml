@@ -371,3 +371,9 @@ event:
           event_type: "start"
       # Update "Dispensing" status on the UI
       - script.execute: refresh_feed_plan
+  - platform: "miot"
+    miot_siid: 9
+    miot_eiid: 1
+    id: power_loss
+    name: "Power Loss"
+    event_type: power_loss

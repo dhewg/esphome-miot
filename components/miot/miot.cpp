@@ -15,7 +15,7 @@
 #endif
 
 #ifdef USE_OTA
-#include "esphome/components/ota/ota_component.h"
+#include "esphome/components/ota/ota_backend.h"
 #endif
 
 #ifdef USE_TIME
@@ -41,6 +41,10 @@ static const char *const NET_LAN = "lan";
 static const char *const NET_CLOUD = "cloud";
 static const char *const NET_UPDATING = "updating";
 
+#ifdef USE_OTA
+ota::OTAComponent ota_component;
+#endif
+
 void Miot::setup() {
   queue_command("MIIO_mcu_version_req");
   queue_net_change_command(true);
@@ -61,7 +65,7 @@ void Miot::setup() {
     });
 
 #ifdef USE_OTA
-  ota::global_ota_component->add_on_state_callback([this](ota::OTAState state, float progress, uint8_t error) {
+  ota_component.add_on_state_callback([this](ota::OTAState state, float progress, uint8_t error) {
     switch (state) {
     case ota::OTA_STARTED:
       // directly send this to indicate a firmware update, as loop() won't get called anymore

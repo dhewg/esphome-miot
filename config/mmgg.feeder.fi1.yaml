@@ -11,15 +11,16 @@ globals:
     restore_value: True
     initial_value: "0"
 
-substitutions:
-  # "Dispense Food" button portions (1 ~ 30).
-  dispense_food_portions: "1"
-
 script:
   - id: refresh_feed_plan
     then:
       - lambda: id(miot_main).execute_action(5, 6, "11 0");
       - lambda: id(miot_main).execute_action(5, 6, "11 1");
+  - id: dispense_food
+    parameters:
+      portions: int
+    then:
+      lambda: id(miot_main).queue_command("action 2 1 5 %i", portions);
 
 esphome:
   name: feeder
@@ -76,7 +77,9 @@ api:
       variables:
         portions: int
       then:
-        - lambda: id(miot_main).queue_command("action 2 1 5 %i", portions);
+        - script.execute: 
+            id: dispense_food
+            portions: !lambda return portions;
     # Add a new scheduled feeding time to MCU memory
     - service: add_scheduled_feed
       variables:
@@ -112,7 +115,7 @@ api:
         - script.execute: refresh_feed_plan
 
 ota:
-  password: !secret feeder_ota_password
+    password: !secret feeder_ota_password
 
 wifi:
   ssid: !secret wifi_ssid
@@ -271,6 +274,17 @@ number:
     step: 1
     min_value: -12
     max_value: 12
+  - platform: template
+    id: dispense_food_portions
+    name: "Dispense portions"
+    icon: mdi:food-apple
+    min_value: 1
+    max_value: 30
+    step: 1
+    optimistic: True
+    restore_value: False
+    initial_value: 1
+    entity_category: config
 
 sensor:
   - platform: "miot"
@@ -305,10 +319,11 @@ sensor:
     lambda: return id(portions_dispensed_today);
 
 button:
-  - platform: "miot"
-    miot_siid: 2
-    miot_aiid: 1
-    miot_action_args: '5 ${dispense_food_portions}'
+  - platform: template
+    on_press: 
+      - script.execute: 
+          id: dispense_food
+          portions: !lambda return id(dispense_food_portions).state;
     name: "Dispense Food"
     icon: mdi:food-apple
   - platform: "miot"

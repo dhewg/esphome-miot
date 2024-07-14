@@ -237,7 +237,7 @@ text_sensor:
         feeding_schedule.pop_back(); // Remove the trailing comma
       }
       return feeding_schedule;
-  # FeedID,Hour,Minute,Portions,(Dispensed=0,Pending=255,Dispensing=254) x5
+  # FeedID,Hour,Minute,Portions,(Dispensed=0,Failed=1,Dispensing=254,Pending=255) x5
   - platform: "miot"
     id: feedplan_string
     miot_siid: 5
@@ -274,9 +274,11 @@ number:
     step: 1
     min_value: -12
     max_value: 12
+    mode: box
+    unit_of_measurement: hours
   - platform: template
     id: dispense_food_portions
-    name: "Dispense portions"
+    name: "Dispense Amount"
     icon: mdi:food-apple
     min_value: 1
     max_value: 30
@@ -285,15 +287,18 @@ number:
     restore_value: False
     initial_value: 1
     entity_category: config
+    unit_of_measurement: portions
+    mode: box
 
 sensor:
   - platform: "miot"
     miot_siid: 4
     miot_piid: 4
-    name: "Last Feed Portions"
+    name: "Last Feed Amount"
     id: outfood_num
     icon: mdi:food-apple
     miot_poll: false
+    unit_of_measurement: portions
   - platform: "miot"
     miot_siid: 8
     miot_piid: 1
@@ -313,9 +318,11 @@ sensor:
     icon: mdi:clock
     entity_category: diagnostic
   - platform: "template"
-    name: "Portions Dispensed Today"
-    id: portions_dispensed_today_sensor
+    name: "Dispensed Today"
+    id: dispensed_today
     accuracy_decimals: 0
+    icon: mdi:food-apple
+    unit_of_measurement: portions
     lambda: return id(portions_dispensed_today);
 
 button:
@@ -361,7 +368,7 @@ event:
           id: portions_dispensed_today
           value: !lambda return id(portions_dispensed_today) + id(outfood_num).state;
       - component.update:
-          id: portions_dispensed_today_sensor
+          id: dispensed_today
       # Update "Dispensed" status on the UI
       - delay: 500ms
       - script.execute: refresh_feed_plan

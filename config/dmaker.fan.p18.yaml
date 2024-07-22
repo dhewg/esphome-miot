@@ -147,3 +147,13 @@ button:
     icon: "mdi:pan-right"
     on_press: 
       - lambda: id(miot_main).queue_command("set_properties 2 9 2");
+  - platform: "miot"
+    name: "Toggle Mode"
+    icon: "mdi:leaf"
+    miot_siid: 4
+    miot_aiid: 1
+  - platform: "miot"
+    name: "Toggle Speed"
+    icon: "mdi:fan"
+    miot_siid: 4
+    miot_aiid: 2

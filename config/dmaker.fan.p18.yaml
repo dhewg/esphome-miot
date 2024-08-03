@@ -54,15 +54,46 @@ miot:
 
 switch:
   - platform: "miot"
+    id: "on"
     miot_siid: 2
     miot_piid: 1
     name: "Power"
     icon: "mdi:power"
+    on_turn_off:
+      - lambda: |- 
+          if(id(template_fan).state == true) {
+            auto call = id(template_fan).turn_off();
+            call.perform();
+          }
+    on_turn_on:
+      - lambda: |- 
+          if(id(template_fan).state == false) {
+            auto call = id(template_fan).turn_on();
+            call.perform();
+          }
   - platform: "miot"
+    id: "horizontal_swing"
     miot_siid: 2
     miot_piid: 4
     name: "Oscillation"
     icon: "mdi:arrow-oscillating"
+    on_turn_off:
+      - lambda: |-
+          if (id(template_fan).oscillating == true) {
+            auto call = id(template_fan).make_call();
+            call.set_oscillating(false);
+            call.set_preset_mode(id(mode).state.c_str());
+            call.perform();
+          }
+    on_turn_on:
+      - lambda: |-
+          if (id(template_fan).oscillating == false) {
+            auto call = id(template_fan).make_call();
+            call.set_oscillating(true);
+            call.set_preset_mode(id(mode).state.c_str());
+            call.perform();
+          }
+
   - platform: "miot"
     miot_siid: 2
     miot_piid: 7
@@ -84,6 +115,7 @@ switch:
   
 select:
   - platform: "miot"
+    id: "mode"
     miot_siid: 2
     miot_piid: 3
     name: "Mode"
@@ -91,6 +123,13 @@ select:
     options:
       0: "Direct Breeze"
       1: "Natural Breeze"
+    on_value:
+      - lambda: |-
+          if(id(template_fan).preset_mode != x) {
+            auto call = id(template_fan).make_call();
+            call.set_preset_mode(x.c_str());
+            call.perform();
+          }
   - platform: "miot"
     miot_siid: 2
     miot_piid: 5
@@ -122,6 +161,7 @@ number:
     max_value: 480
     step: 1
   - platform: "miot"
+    id: "speed_level"
     miot_siid: 2
     miot_piid: 10
     name: "Fan Speed"
@@ -130,6 +170,12 @@ number:
     max_value: 100
     step: 1
     unit_of_measurement: "%"
+    on_value:
+      - lambda: |-
+          auto call = id(template_fan).make_call();
+          call.set_speed(x);
+          call.set_preset_mode(id(mode).state.c_str());
+          call.perform();
 
 button:
   - platform: "miot"
@@ -157,3 +203,44 @@ button:
     icon: "mdi:fan"
     miot_siid: 4
     miot_aiid: 2
+
+fan:
+  - platform: "template"
+    id: template_fan
+    name: None
+    has_oscillating: true
+    speed_count: 100
+    preset_modes:
+      - "Direct Breeze"
+      - "Natural Breeze"
+    restore_mode: NO_RESTORE
+    on_turn_on:
+      - lambda: if (id(on).state == false) id(on).turn_on();
+    on_turn_off:
+      - lambda: if (id(on).state == true) id(on).turn_off();
+    on_oscillating_set:
+      - lambda: |-
+          if (id(horizontal_swing).state != x) {
+            if (x == true) {
+              id(horizontal_swing).turn_on();
+            } else {
+              id(horizontal_swing).turn_off();
+            }
+          }
+          auto call = id(template_fan).make_call();
+          call.set_preset_mode(id(mode).state.c_str());
+          call.perform();
+    on_speed_set:
+      - lambda: |-
+          if (id(speed_level).state != x) {
+            auto call = id(speed_level).make_call();
+            call.set_value(x);
+            call.perform();
+          }
+    on_preset_set:
+      - lambda: |-
+          if (x != "" && id(mode).state != x) {
+            auto call = id(mode).make_call();
+            call.set_option(x);
+            call.perform();
+          }

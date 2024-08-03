@@ -157,6 +157,7 @@ number:
     name: "Off Delay"
     icon: "mdi:clock-outline"
     unit_of_measurement: "min"
+    device_class: duration
     min_value: 0
     max_value: 480
     step: 1

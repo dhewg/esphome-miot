@@ -275,7 +275,7 @@ number:
     min_value: -12
     max_value: 12
     mode: box
-    unit_of_measurement: hours
+    unit_of_measurement: h
   - platform: template
     id: dispense_food_portions
     name: "Dispense Amount"
@@ -303,13 +303,17 @@ sensor:
     miot_siid: 8
     miot_piid: 1
     name: "Feeder Clean Timer"
-    unit_of_measurement: days
+    unit_of_measurement: d
+    state_class: measurement
+    device_class: duration
     icon: mdi:broom
   - platform: "miot"
     miot_siid: 11
     miot_piid: 2
     name: "Dessicant Replace Timer"
-    unit_of_measurement: days
+    unit_of_measurement: d
+    state_class: measurement
+    device_class: duration
     icon: mdi:air-filter
   - platform: "miot"    
     miot_siid: 9

@@ -22,10 +22,10 @@ Device | Model Version | Wiki | ESPHome Config | MIoT Specification
 Mi Air Purifier 3C | zhimi.airp.mb4a <br> zhimi.airpurifier.mb4 |[link](../../wiki/Xiaomi-Mi-Air-Purifier-3C) | [zhimi.airp.mb4a](config/zhimi.airp.mb4a.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb4a) <br> [link](https://home.miot-spec.com/spec/zhimi.airpurifier.mb4)
 Xiaomi Smart Air Purifier 4 | zhimi.airp.mb5 | [link](../../wiki/Xiaomi-Smart-Air-Purifier-4) | [zhimi.airp.mb5](config/zhimi.airp.mb5.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb5)
 Xiaomi Smart Air Purifier 4 Lite | zhimi.airp.rmb1 | [link](../../wiki/Xiaomi-Smart-Air-Purifier-4-Lite-(zhimi.airp.rmb1)) | [zhimi.airp.rmb1](config/zhimi.airp.rmb1.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.rmb1)
-Xiaomi Mi Smart Standing Fan 2 | dmaker.fan.p18 |  | [dmaker.fan.p18](config/dmaker.fan.p18.yaml) | [link](https://home.miot-spec.com/spec/dmaker.fan.p18)
 Xiaomi Smart Air Purifier 4 Pro | zhimi.airp.vb4 |  | [zhimi.airp.vb4](config/zhimi.airp.vb4.yaml) | [link](https://home.miot-spec.com/spec?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-vb4:1)
+Xiaomi Mi Smart Standing Fan 2 | dmaker.fan.p18 |  | [dmaker.fan.p18](config/dmaker.fan.p18.yaml) | [link](https://home.miot-spec.com/spec/dmaker.fan.p18)
 
-Some of the devices has more than one model versions (like Mi Air Purifier 3C). If their MIoT specifications are identical, the ESPHome config will be compatible with all of them.
+Some of the devices have more than one model (like Mi Air Purifier 3C). If their MIoT specifications are compatible, the ESPHome config will be usable with all of them.
 
 ## Building a firmware
 

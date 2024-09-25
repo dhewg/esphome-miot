@@ -5,7 +5,8 @@ external_components:
 
 globals:
   - id: schedule
-    type: std::map<std::string, std::string>
+    # map<id, {hour, minute, portions, status}>
+    type: std::map<int, std::array<int, 4>>
   - id: portions_dispensed_today
     type: int
     restore_value: True
@@ -228,10 +229,15 @@ text_sensor:
     lambda: |-
       std::string feeding_schedule;
       for (auto &entry : id(schedule)) {
-        if (entry.second.find("255") == 0) {
+        if (entry.second[0] == 255) {
           continue; // Skip empty entries
         }
-        feeding_schedule += entry.first + "," + entry.second + ",";
+        feeding_schedule += str_sprintf("%d,%d,%d,%d,%d,",
+                                        entry.first,
+                                        entry.second[0],
+                                        entry.second[1],
+                                        entry.second[2],
+                                        entry.second[3]);
       }
       if (!feeding_schedule.empty()) {
         feeding_schedule.pop_back(); // Remove the trailing comma
@@ -247,20 +253,24 @@ text_sensor:
     on_value:
       - lambda: |-
           char* token = strtok(x.data(), ",");
-          while (token != NULL) {
-            std::string feed_id = std::string(token);
-            token = strtok(NULL, ",");
-            std::string hour = std::string(token);
-            token = strtok(NULL, ",");
-            std::string minute = std::string(token);
-            token = strtok(NULL, ",");
-            std::string portions = std::string(token);
-            token = strtok(NULL, ",");
-            std::string status = std::string(token);
-            token = strtok(NULL, ",");
           
-            std::string details = hour + "," + minute + "," + portions + "," + status;
-            id(schedule)[feed_id] = details;
+          while (token != NULL) {
+            int feed_id = atoi(token);
+            token = strtok(NULL, ",");
+            
+            int hour = atoi(token);
+            token = strtok(NULL, ",");
+            
+            int minute = atoi(token);
+            token = strtok(NULL, ",");
+            
+            int portions = atoi(token);
+            token = strtok(NULL, ",");
+            
+            int status = atoi(token);
+            token = strtok(NULL, ",");
+
+            id(schedule)[feed_id] = {hour, minute, portions, status};
           }
       - lambda: id(raw_feed_plan).update();
 

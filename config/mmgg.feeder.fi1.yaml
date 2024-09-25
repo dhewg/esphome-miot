@@ -1,5 +1,10 @@
 # https://home.miot-spec.com/spec/mmgg.feeder.fi1
+# 
 # TODO: Automatically adjust "phon-timezone" based on home assistant time for DST.
+# 
+# Home Assistant schedule card for this config available at:
+# https://github.com/cristianchelu/dispenser-schedule-card
+
 external_components:
   source: github://dhewg/esphome-miot@main
 
@@ -120,6 +125,7 @@ api:
         - script.execute: refresh_feed_plan
 
 ota:
+  - platform: esphome
     password: !secret feeder_ota_password
 
 wifi:

@@ -36,15 +36,19 @@ time:
     id: homeassistant_time
     timezone: GMT0
     on_time: 
-      # Every day at 00:01:00
-      - hours: 0
-        minutes: 1 # buffer to make sure MCU schedule has been refreshed
-        seconds: 0
+      - hours: "*"
+        minutes: 0
+        seconds: 30
         then:
-          - script.execute: refresh_feed_plan
-          - globals.set: 
-              id: portions_dispensed_today
-              value: "0"
+          # Refresh the feed plan at midnight in device timezone
+          # with 30 second buffer for potential MCU time drift
+          - lambda: |-
+              int current_hour = id(homeassistant_time).now().hour;
+              int adjusted_hour = current_hour + id(phon_time_zone).state;
+              if (adjusted_hour == 24 || adjusted_hour == 0) {
+                id(refresh_feed_plan).execute();
+                id(portions_dispensed_today) = 0;
+              }
 
 esp8266:
   board: esp_wroom_02
@@ -275,7 +279,8 @@ text_sensor:
       - lambda: id(raw_feed_plan).update();
 
 number:
-  - platform: "miot"    
+  - platform: "miot"
+    id: phon_time_zone
     miot_siid: 9
     miot_piid: 12
     name: "Timezone Offset"

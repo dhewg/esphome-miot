@@ -1,0 +1,156 @@
+# https://home.miot-spec.com/spec/zhimi.humidifier.ca4
+
+external_components:
+  source: github://dhewg/esphome-miot@main
+
+esphome:
+  name: living_room_air_humidifier
+  friendly_name: Living Room Air Humidifier
+  comment: Smartmi Evaporative Humidifier 2 (zhimi.humidifier.ca4)
+  project:
+    name: "dhewg.esphome-miot"
+    version: "zhimi.humidifier.ca4"
+
+esp32:
+  board: esp32doit-devkit-v1
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_mac_crc: true
+
+logger:
+  level: INFO
+
+api:
+  encryption:
+    key: "xxx"
+  reboot_timeout: 0s
+  services:
+    - service: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: 'id(miot_main).queue_command(command);'
+
+ota:
+ - platform: esphome
+   password: "xxx"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    ssid: "Mihumidifier Fallback"
+    password: "xxx"
+
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 115200
+
+miot:
+  id: miot_main
+
+switch:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 1
+    name: "Power"
+    icon: mdi:power
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 8
+    name: "Dry"
+    icon: mdi:water-minus
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 1
+    name: "Notification Sounds"
+    icon: mdi:volume-high
+    entity_category: config
+  - platform: "miot"
+    miot_siid: 6
+    miot_piid: 1
+    name: "Child Lock"
+    icon: mdi:lock
+    entity_category: config
+  - platform: "miot"
+    miot_siid: 7
+    miot_piid: 5
+    name: "Clean Mode"
+    icon: mdi:water-minus
+    entity_category: config
+
+select:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 5
+    name: "Fan level"
+    icon: mdi:fan
+    options:
+      0: "Auto"
+      1: "Low"
+      2: "Medium"
+      3: "High"
+  - platform: "miot"
+    miot_siid: 5
+    miot_piid: 2
+    name: "Display brightness"
+    icon: mdi:brightness-6
+    entity_category: config
+    options:
+      0: "Dark"
+      1: "Glimmer"
+      2: "Brightest"
+
+sensor:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 2
+    name: "Device Fault Code"
+    icon: mdi:fan-alert
+    entity_category: diagnostic
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 7
+    name: "Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: "measurement"
+    icon: mdi:thermometer
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 9
+    name: "Relative Humidity"
+    unit_of_measurement: "%"
+    device_class: humidity
+    state_class: "measurement"
+    icon: mdi:water-percent
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 7
+    name: "Water Level"
+    unit_of_measurement: "%"
+    state_class: "measurement"
+    icon: mdi:water-percent
+    filters:
+      - clamp:
+          min_value: 0
+          max_value: 100
+          ignore_out_of_range: true
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 11
+    name: "Motor Speed"
+    unit_of_measurement: "rpm"
+    icon: mdi:fan
+  - platform: "miot"
+    miot_siid: 7
+    miot_piid: 1
+    name: "Actual Speed"
+    unit_of_measurement: "rpm"
+    icon: mdi:fan
+  - platform: internal_temperature
+    name: "MCU Temperature"

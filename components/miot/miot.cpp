@@ -15,7 +15,7 @@
 #endif
 
 #ifdef USE_OTA
-#include "esphome/components/ota/ota_component.h"
+#include "esphome/components/ota/ota_backend.h"
 #endif
 
 #ifdef USE_TIME
@@ -61,17 +61,18 @@ void Miot::setup() {
     });
 
 #ifdef USE_OTA
-  ota::global_ota_component->add_on_state_callback([this](ota::OTAState state, float progress, uint8_t error) {
-    switch (state) {
-    case ota::OTA_STARTED:
-      // directly send this to indicate a firmware update, as loop() won't get called anymore
-      send_reply_("down MIIO_net_change updating");
-      break;
-    case ota::OTA_ERROR:
-      queue_net_change_command(true);
-      break;
-    default:
-      break;
+  ota::get_global_ota_callback()->add_on_state_callback(
+    [this](ota::OTAState state, float progress, uint8_t error, ota::OTAComponent *comp) {
+      switch (state) {
+      case ota::OTA_STARTED:
+        // directly send this to indicate a firmware update, as loop() won't get called anymore
+        send_reply_("down MIIO_net_change updating");
+        break;
+      case ota::OTA_ERROR:
+        queue_net_change_command(true);
+        break;
+      default:
+        break;
     }
   });
 #endif
@@ -134,6 +135,16 @@ void Miot::register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueT
   }
   this->listeners_[std::make_pair(siid, piid)] = MiotListener{ .poll = poll, .type = type, .func = func };
 }
+
+#ifdef USE_EVENT
+void Miot::register_event_listener(uint32_t siid, uint32_t eiid, const std::function<void()> &func) {
+  if (event_listeners_.find(std::make_pair(siid, eiid)) != event_listeners_.end()) {
+    ESP_LOGE(TAG, "Event already has a listener: %" PRIu32 " %" PRIu32, siid, eiid);
+    return;
+  }
+  this->event_listeners_[std::make_pair(siid, eiid)] = MiotEventListener{ .func = func };
+}
+#endif
 
 void Miot::queue_command(const std::string &cmd) {
   ESP_LOGD(TAG, "Queuing MCU command '%s'", cmd.c_str());
@@ -218,11 +229,26 @@ void Miot::update_property(uint32_t siid, uint32_t piid, const char *value) {
   }
 }
 
+void Miot::process_event_(uint32_t siid, uint32_t eiid) {
+#ifdef USE_EVENT
+  auto it = event_listeners_.find(std::make_pair(siid, eiid));
+  if (it == event_listeners_.end()) {
+    ESP_LOGW(TAG, "Received event without component: %" PRIu32 " %" PRIu32, siid, eiid);
+    return;
+  }
+
+  (*it).second.func();
+#else
+  ESP_LOGW(TAG, "Received event without component: %" PRIu32 " %" PRIu32, siid, eiid);
+#endif
+}
+
 // mrfNotify: properties_changed <siid> <piid> <value> ... <siid> <piid> <value>
 // mrfSet: result <siid> <piid> <code> ... <siid> <piid> <code>
 // mrfAction: result <siid> <aiid> <code> <piid> <value> ... <piid> <value>
+// mrfEvent: event_occurred <siid> <eiid> <piid> <value> ... <piid> <value>
 void Miot::update_properties(char **saveptr, MiotResultFormat format) {
-  const char *siid = nullptr, *piid = nullptr, *aiid, *code = nullptr, *value;
+  const char *siid = nullptr, *piid = nullptr, *aiid, *eiid = nullptr, *code = nullptr, *value;
   const char *delim = " ";
 
   if (format == mrfAction) {
@@ -238,10 +264,17 @@ void Miot::update_properties(char **saveptr, MiotResultFormat format) {
     }
   }
 
+  if (format == mrfEvent) {
+    if (!(siid = strtok_r(nullptr, delim, saveptr)))
+      return;
+    if (!(eiid = strtok_r(nullptr, delim, saveptr)))
+      return;
+  }
+
   while (true) {
     delim = " ";
 
-    if (format != mrfAction)
+    if (format != mrfAction && format != mrfEvent)
       if (!(siid = strtok_r(nullptr, delim, saveptr)))
         break;
     if (!(piid = strtok_r(nullptr, delim, saveptr)))
@@ -261,6 +294,11 @@ void Miot::update_properties(char **saveptr, MiotResultFormat format) {
       break;
 
     update_property(parse_number<uint32_t>(siid).value_or(0u), parse_number<uint32_t>(piid).value_or(0u), value);
+  }
+
+  if (format == mrfEvent) {
+    // send event after all properties have been updated
+    process_event_(parse_number<uint32_t>(siid).value_or(0u), parse_number<uint32_t>(eiid).value_or(0u));
   }
 }
 
@@ -314,6 +352,9 @@ void Miot::process_message_(char *msg) {
     }
   } else if (cmd == "properties_changed") {
     update_properties(&saveptr, mrfNotify);
+    send_reply_("ok");
+  } else if (cmd == "event_occured") {
+    update_properties(&saveptr, mrfEvent);
     send_reply_("ok");
   } else if (cmd == "result") {
     update_properties(&saveptr, expect_action_result_ ? mrfAction : mrfSet);

@@ -1,4 +1,4 @@
-# https://home.miot-spec.com/spec/zhimi.airp.mb5
+# https://home.miot-spec.com/spec?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-vb4:1
 
 external_components:
   source: github://dhewg/esphome-miot@main
@@ -6,10 +6,10 @@ external_components:
 esphome:
   name: purifier
   friendly_name: Air Purifier
-  comment: Xiaomi Smart Air Purifier 4 (zhimi.airp.mb5)
+  comment: Xiaomi Smart Air Purifier 4 Pro (zhimi.airp.vb4)
   project:
     name: "dhewg.esphome-miot"
-    version: "zhimi.airp.mb5"
+    version: "zhimi.airp.vb4"
 
 esp32:
   board: esp32dev
@@ -156,17 +156,15 @@ number:
     miot_piid: 2
     name: "Favorite Speed"
     icon: mdi:speedometer
-    # specs claim 200-2300, but the mcu only accepts 450-2000
-    min_value: 450
-    max_value: 2000
+    min_value: 200
+    max_value: 2300
     step: 1
   - platform: "miot"
     miot_siid: 9
     miot_piid: 4
     name: "Manual Speed"
     icon: mdi:speedometer
-    # specs claim 0-2000, but the mcu only accepts 450-2000
-    min_value: 450
+    min_value: 0
     max_value: 2000
     step: 1
   - platform: "miot"
@@ -174,16 +172,7 @@ number:
     miot_piid: 5
     name: "Favorite Level"
     icon: mdi:speedometer
-    # specs claim 0-11, but the mcu only accepts 1-11
-    min_value: 1
-    max_value: 11
-    step: 1
-  - platform: "miot"
-    miot_siid: 9
-    miot_piid: 9
-    name: "Manual Level"
-    icon: mdi:speedometer
-    min_value: 1
+    min_value: 0
     max_value: 11
     step: 1
 
@@ -209,6 +198,13 @@ sensor:
     unit_of_measurement: "°C"
     device_class: temperature
     accuracy_decimals: 1
+    state_class: "measurement"
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 8
+    name: "PM10 Density"
+    unit_of_measurement: "µg/m³"
+    device_class: pm10
     state_class: "measurement"
   - platform: "miot"
     miot_siid: 4

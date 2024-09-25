@@ -39,7 +39,8 @@ api:
         - lambda: 'id(miot_main).queue_command(command);'
 
 ota:
-  password: !secret ota_password
+  - platform: esphome
+    password: !secret ota_password
 
 wifi:
   ssid: !secret wifi_ssid
@@ -117,15 +118,6 @@ select:
       2: "Off"
   - platform: "miot"
     miot_siid: 15
-    miot_piid: 12
-    name: "Temperature Display Unit"
-    icon: mdi:temperature-celsius
-    entity_category: config
-    options:
-      0: "Celsius"
-      1: "Fahrenheit"
-  - platform: "miot"
-    miot_siid: 15
     miot_piid: 10
     name: "Manual Level"
     icon: mdi:speedometer
@@ -135,13 +127,6 @@ select:
       3: "Level 3"
 
 text_sensor:
-  - platform: "miot"
-    miot_siid: 15
-    miot_piid: 13
-    miot_poll: false
-    name: "Serial Number"
-    icon: mdi:numeric
-    entity_category: diagnostic
   - platform: "miot"
     miot_siid: 2
     miot_piid: 1
@@ -182,14 +167,6 @@ number:
     icon: mdi:speedometer
     min_value: 300
     max_value: 2300
-    step: 1
-  - platform: "miot"
-    miot_siid: 10
-    miot_piid: 9
-    name: "Manual Speed"
-    icon: mdi:speedometer
-    min_value: 0
-    max_value: 3000
     step: 1
   - platform: "miot"
     miot_siid: 10

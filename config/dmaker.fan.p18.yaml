@@ -13,8 +13,6 @@ esphome:
 
 esp8266:
   board: esp_wroom_02
-  framework:
-    version: recommended
 
 logger:
   level: DEBUG

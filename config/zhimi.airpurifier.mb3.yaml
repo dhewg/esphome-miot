@@ -6,7 +6,7 @@ external_components:
 esphome:
   name: purifier
   friendly_name: Air Purifier
-  comment: Xiaomi  Air Purifier 3/3H (zhimi.airpurifier.mb3)
+  comment: Xiaomi Air Purifier 3/3H (zhimi.airpurifier.mb3)
   project:
     name: "dhewg.esphome-miot"
     version: "zhimi.airpurifier.mb3"

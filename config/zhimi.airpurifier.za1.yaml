@@ -1,0 +1,334 @@
+# https://home.miot-spec.com/spec/zhimi.airpurifier.za1
+
+external_components:
+  source: github://dhewg/esphome-miot@main
+  refresh: 0s
+
+esphome:
+  name: smartmi-air-purifier
+  friendly_name: Smartmi Air Purifier
+  project:
+    name: "dhewg.esphome-miot"
+    version: "zhimi.airpurifier.za1"
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_custom_mac: true
+      ignore_efuse_mac_crc: true
+
+time:
+  - platform: homeassistant
+    id: homeassistant_time
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+  reboot_timeout: 0s
+  services:
+    - service: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: 'id(miot_main).queue_command(command);'
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+captive_portal:
+
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 115200
+
+miot:
+  id: miot_main
+
+switch:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 1
+    name: "Power"
+    icon: mdi:power
+    device_class: outlet
+  - platform: "miot"
+    miot_siid: 5
+    miot_piid: 1
+    name: "Notification Sounds"
+    icon: mdi:volume-high
+    entity_category: config
+  - platform: "miot"
+    miot_siid: 7
+    miot_piid: 1
+    name: "Physical Control Locked"
+    icon: mdi:lock
+    entity_category: config
+  - platform: "miot"
+    miot_siid: 15
+    miot_piid: 13
+    name: "Gesture"
+    icon: mdi:hand-back-left
+    entity_category: config
+
+select:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 5
+    name: "Mode"
+    icon: mdi:auto-mode
+    options:
+      0: "Auto"
+      1: "Sleep"
+      2: "Favorite"
+  - platform: "miot"
+    miot_siid: 6
+    miot_piid: 1
+    name: "Brightness"
+    icon: mdi:brightness-6
+    entity_category: config
+    options:
+      0: "Bright"
+      1: "Light"
+      2: "Off"
+  - platform: "miot"
+    miot_siid: 15
+    miot_piid: 12
+    name: "Country Code"
+    icon: mdi:earth-box
+    entity_category: config
+    options:
+      1: "America"
+      2: "Canada"
+      3: "Singapore"
+      4: "Europe"
+      5: "Australian"
+      6: "Korea"
+      7: "China"
+      8: "France"
+      9: "Japanese"
+      10: "Taiwan"
+    disabled_by_default: true
+
+number:
+  - platform: "miot"
+    miot_siid: 10
+    miot_piid: 10
+    name: "Favorite Fan Level"
+    device_class: wind_speed
+    icon: mdi:fan
+    mode: slider
+    min_value: 0
+    max_value: 14
+    step: 1
+  - platform: "miot"
+    miot_siid: 9
+    miot_piid: 1
+    name: "Filter Max Time"
+    icon: mdi:timer-settings
+    unit_of_measurement: "hour"
+    mode: slider
+    min_value: 2000
+    max_value: 6000
+    step: 1000
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 9
+    miot_piid: 2
+    name: "Filter Time Set"
+    icon: mdi:timer-settings
+    unit_of_measurement: "hours"
+    mode: slider
+    min_value: 0
+    max_value: 10000
+    step: 1000
+    disabled_by_default: true
+
+text_sensor:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 2
+    name: "Device Fault"
+    icon: mdi:fan-alert
+    entity_category: diagnostic
+    filters:
+      - map:
+        - "0 -> No Faults"
+        - "1 -> Motor failure"
+        - "2 -> Motor stalls"
+        - "3 -> Sensor missing"
+        - "4 -> Abnormal humidity"
+        - "5 -> Abnormal temperature"
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 15
+    miot_piid: 6
+    name: "Reboot Cause"
+    entity_category: diagnostic
+    filters:
+      - map:
+        - "0 -> Hardware"
+        - "1 -> Human"
+        - "2 -> Upgrade"
+        - "3 -> Watchdog"
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 13
+    miot_piid: 5
+    name: "Sensor State"
+    entity_category: diagnostic
+    filters:
+      - map:
+        - "0 -> Normal mode"
+        - "1 -> Sleep mode"
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 13
+    miot_piid: 4
+    name: "Aqi Zone"
+    entity_category: diagnostic
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 14
+    miot_piid: 1
+    name: "RFID Tag"
+    entity_category: diagnostic
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 14
+    miot_piid: 2
+    name: "RFID Factory ID"
+    entity_category: diagnostic
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 14
+    miot_piid: 3
+    name: "RFID Product ID"
+    entity_category: diagnostic
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 14
+    miot_piid: 4
+    name: "RFID Time"
+    entity_category: diagnostic
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 14
+    miot_piid: 5
+    name: "RFID Serial Num"
+    entity_category: diagnostic
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 15
+    miot_piid: 8
+    name: "HW Version"
+    icon: mdi:numeric
+    entity_category: diagnostic
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 15
+    miot_piid: 9
+    name: "SGP Ethanol"
+    icon: mdi:numeric
+    entity_category: diagnostic
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 15
+    miot_piid: 10
+    name: "SGP Serial"
+    icon: mdi:numeric
+    entity_category: diagnostic
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 15
+    miot_piid: 11
+    name: "SGP Version"
+    icon: mdi:numeric
+    entity_category: diagnostic
+    disabled_by_default: true
+
+sensor:
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 1
+    name: "Air Quality"
+    device_class: aqi
+    state_class: measurement
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 7
+    name: "Relative Humidity"
+    unit_of_measurement: "%"
+    device_class: humidity
+    state_class: measurement
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 6
+    name: "PM2.5 Density"
+    unit_of_measurement: "µg/m³"
+    device_class: pm25
+    state_class: measurement
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 8
+    name: "Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+    accuracy_decimals: 1
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 3
+    name: "Filter Life Level"
+    unit_of_measurement: "%"
+    icon: mdi:air-filter
+  - platform: "miot"
+    miot_siid: 4
+    miot_piid: 5
+    name: "Filter Used Time"
+    entity_category: diagnostic
+    unit_of_measurement: "h"
+    device_class: duration
+    icon: mdi:air-filter
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 10
+    miot_piid: 11
+    name: "Motor Speed"
+    unit_of_measurement: "rpm"
+    icon: mdi:fan
+  - platform: "miot"
+    miot_siid: 13
+    miot_piid: 1
+    name: "Total Purified Volume"
+    unit_of_measurement: "m³"
+    device_class: gas
+    state_class: total_increasing
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 13
+    miot_piid: 2
+    name: "Average AQI"
+    device_class: aqi
+    state_class: measurement
+    disabled_by_default: true
+  - platform: "miot"
+    miot_siid: 12
+    miot_piid: 1
+    name: "Use Time"
+    unit_of_measurement: "s"
+    device_class: duration
+    state_class: total_increasing
+    disabled_by_default: true

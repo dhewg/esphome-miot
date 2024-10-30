@@ -40,19 +40,31 @@ static const char *const NET_UAP = "uap";
 static const char *const NET_LAN = "lan";
 static const char *const NET_CLOUD = "cloud";
 static const char *const NET_UPDATING = "updating";
+static const int MAX_COMMAND_LENGTH = 60;
 
 void Miot::setup() {
   queue_command("MIIO_mcu_version_req");
   queue_net_change_command(true);
 
   this->set_interval("poll", 60000, [this] {
-    std::string cmd;
-    cmd.reserve(MAX_LINE_LENGTH);
-    cmd = "get_properties";
-    for (auto it = listeners_.cbegin(); it != listeners_.cend(); ++it)
-      if ((*it).second.poll)
-        cmd += str_snprintf(" %" PRIu32 " %" PRIu32, 32, (*it).first.first, (*it).first.second);
-    queue_command(cmd);
+    std::string cmd = "";
+
+    for (auto it = listeners_.cbegin(); it != listeners_.cend(); ++it) {
+      if ((*it).second.poll) {
+        std::string part = str_snprintf(" %" PRIu32 " %" PRIu32, 32, (*it).first.first, (*it).first.second);
+
+        if (cmd.size() + part.size() > MAX_COMMAND_LENGTH) {          
+          queue_command("get_properties" + cmd);
+          cmd = "";
+        }
+
+        cmd += part;
+      }
+    }
+
+    if(cmd.size() > 0) {
+      queue_command("get_properties" + cmd);
+    }
   });
 
   if (heartbeat_siid_ != 0 && heartbeat_piid_ != 0)

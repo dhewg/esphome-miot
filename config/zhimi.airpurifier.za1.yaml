@@ -2,11 +2,11 @@
 
 external_components:
   source: github://dhewg/esphome-miot@main
-  refresh: 0s
 
 esphome:
-  name: smartmi-air-purifier
-  friendly_name: Smartmi Air Purifier
+  name: purifier
+  friendly_name: Air Purifier
+  comment: Smartmi Air Purifier (zhimi.airpurifier.za1)
   project:
     name: "dhewg.esphome-miot"
     version: "zhimi.airpurifier.za1"
@@ -46,6 +46,8 @@ ota:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  ap:
+    password: !secret wifi_ap_password
 
 captive_portal:
 

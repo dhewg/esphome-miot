@@ -377,7 +377,9 @@ void Miot::process_message_(char *msg) {
   } else if (cmd == "time") {
     const char *arg = strtok_r(nullptr, " ", &saveptr);
     bool posix = arg && *arg && std::strcmp(arg, "posix") == 0;
-    send_reply_(get_time_reply_(posix).c_str());
+    auto reply = get_time_reply_(posix);
+    ESP_LOGD(TAG, "MCU time request: %s", reply.c_str());
+    send_reply_(reply.c_str());
   } else if (cmd == "mac") {
     send_reply_(get_mac_address().c_str());
   } else if (cmd == "model") {

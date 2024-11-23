@@ -27,6 +27,11 @@ script:
       portions: int
     then:
       lambda: id(miot_main).queue_command("action 2 1 5 %i", portions);
+  - id: set_countrycode
+    parameters:
+      countrycode: int
+    then:
+      lambda: id(miot_main).queue_command("action 9 5 13 %i", countrycode);
 
 esphome:
   name: feeder
@@ -123,6 +128,14 @@ api:
       then:
         - lambda: id(miot_main).queue_command("action 5 9 10 %i", id);
         - script.execute: refresh_feed_plan
+    # Set device country code
+    - service: set_countrycode
+      variables:
+        countrycode: int
+      then:
+        - script.execute: 
+            id: set_countrycode
+            countrycode: !lambda return countrycode;
 
 ota:
   - platform: esphome
@@ -336,12 +349,18 @@ sensor:
     state_class: measurement
     device_class: duration
     icon: mdi:air-filter
-  - platform: "miot"    
+  - platform: "miot"
+    id: contrycode
     miot_siid: 9
     miot_piid: 13
     name: "Device Country"
     icon: mdi:clock
     entity_category: diagnostic
+    on_raw_value: # https://github.com/dhewg/esphome-miot/issues/39
+      lambda: |-
+        if (x == 255) {
+          id(set_countrycode).execute(3);
+        }
   - platform: "template"
     name: "Dispensed Today"
     id: dispensed_today

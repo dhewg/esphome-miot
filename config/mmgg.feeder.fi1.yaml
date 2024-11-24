@@ -1,18 +1,27 @@
 # https://home.miot-spec.com/spec/mmgg.feeder.fi1
 # 
-# TODO: Automatically adjust "phon-timezone" based on home assistant time for DST.
-# 
 # Home Assistant schedule card for this config available at:
 # https://github.com/cristianchelu/dispenser-schedule-card
 
 external_components:
   source: github://dhewg/esphome-miot@main
 
+substitutions:
+  # Timezone for automatic daylight savings time (DST) adjustment
+  # See https://en.wikipedia.org/wiki/List_of_tz_database_time_zones for options
+  # Change as needed for your location
+  # e.g. "Europe/London", "America/New_York", "Asia/Tokyo"
+  auto_dst_timezone: "Etc/GMT" 
+
 globals:
   - id: schedule
     # map<id, {hour, minute, portions, status}>
     type: std::map<int, std::array<int, 4>>
   - id: portions_dispensed_today
+    type: int
+    restore_value: True
+    initial_value: "0"
+  - id: auto_dst_offset
     type: int
     restore_value: True
     initial_value: "0"
@@ -44,7 +53,10 @@ esphome:
 time:
   - platform: homeassistant
     id: homeassistant_time
-    timezone: GMT0
+    timezone: ${auto_dst_timezone}
+    on_time_sync:
+      lambda: |-
+        id(auto_dst_offset) = id(homeassistant_time).now().timezone_offset() / 3600;
     on_time: 
       - hours: "*"
         minutes: 0
@@ -53,7 +65,7 @@ time:
           # Refresh the feed plan at midnight in device timezone
           # with 30 second buffer for potential MCU time drift
           - lambda: |-
-              int current_hour = id(homeassistant_time).now().hour;
+              int current_hour = id(homeassistant_time).utcnow().hour;
               int adjusted_hour = current_hour + id(phon_time_zone).state;
               if (adjusted_hour == 24 || adjusted_hour == 0) {
                 id(refresh_feed_plan).execute();
@@ -296,20 +308,14 @@ text_sensor:
             id(schedule)[feed_id] = {hour, minute, portions, status};
           }
       - lambda: id(raw_feed_plan).update();
+  - platform: "template"
+    name: "Device Timezone"
+    id: timezone
+    icon: mdi:clock
+    entity_category: diagnostic
+    lambda: return {"${auto_dst_timezone}"};
 
 number:
-  - platform: "miot"
-    id: phon_time_zone
-    miot_siid: 9
-    miot_piid: 12
-    name: "Timezone Offset"
-    icon: mdi:clock
-    entity_category: config
-    step: 1
-    min_value: -12
-    max_value: 12
-    mode: box
-    unit_of_measurement: h
   - platform: template
     id: dispense_food_portions
     name: "Dispense Amount"
@@ -349,6 +355,19 @@ sensor:
     state_class: measurement
     device_class: duration
     icon: mdi:air-filter
+  - platform: "miot"
+    id: phon_time_zone
+    miot_siid: 9
+    miot_piid: 12
+    name: "Timezone Offset"
+    icon: mdi:clock
+    unit_of_measurement: h
+    entity_category: diagnostic
+    on_value:
+      - lambda: |-
+          if (x != id(auto_dst_offset)) {
+            id(miot_main).queue_command("action 9 4 12 %i", id(auto_dst_offset));
+          }
   - platform: "miot"
     id: contrycode
     miot_siid: 9

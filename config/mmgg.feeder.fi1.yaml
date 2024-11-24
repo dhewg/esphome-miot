@@ -267,7 +267,7 @@ text_sensor:
         if (entry.second[0] == 255) {
           continue; // Skip empty entries
         }
-        feeding_schedule += str_sprintf("%d,%d,%d,%d,%d,",
+        feeding_schedule += str_sprintf("%d,%d,%d,%d,%d ",
                                         entry.first,
                                         entry.second[0],
                                         entry.second[1],

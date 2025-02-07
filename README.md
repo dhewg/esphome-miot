@@ -65,6 +65,11 @@ First, look up the desired device on the [Xiaomi MIoT Spec](https://home.miot-sp
 
 Each device defines its service (`SIID`) and property (`PIID`) IDs. You just have to add all the desired properties with their according IDs to your ESPHome yaml config.
 
+Alternatively, you can use the online
+[miot2esphome utility](https://cristianchelu.github.io/miot2esphome/) to
+try to automatically generate a starter configuration for you, based on the
+published device specs. You can then edit this to make sure everything works.
+
 For examples, see the [supported devices](#supported-devices) table above and compare a config against its specification.
 
 Once your newly added device is working, please open a PR to add its config here!

@@ -31,13 +31,27 @@ Smartmi Air Purifier | zhimi.airpurifier.za1 |  | [zhimi.airpurifier.za1](config
 
 Some of the devices have more than one model (like Mi Air Purifier 3C). If their MIoT specifications are compatible, the ESPHome config will be usable with all of them.
 
-## Not supported devices
+## Unsupported devices
 
-Some devices have Xiaomi proprietary chip instead of ESP32 chip. Those devices are not supported.
+- Devices using only the ESP microcontroller to directly control the hardware.
+  
+  For these, this component will not work, but you can create an ESPHome 
+  configuration directly;
+- Devices using a proprietary Xiaomi WiFi microcontroller. These are not 
+  flashable with ESPHome;
+- Devices that use the legacy `miio` protocol. These may have an ESP chip and a
+  separate microcontroller, but the communication protocol is unsupported by
+  this component.
 
-Device | Model Version | Wiki | MIoT Specification
----|---|---|---
-Mi Air Purifier 2S | zhimi.airpurifier.mc1 | [link](../../wiki/Xiaomi-Mi-Air-Purifier-2S)|[link](https://home.miot-spec.com/spec/zhimi.airpurifier.mc1)
+  If the device has the `miio2miot` tag on the 
+  [Xiaomi MIoT Spec](https://home.miot-spec.com/) site, or if you see messages
+  like `props power "on"` on the serial bus, this is the case.
+
+The following devices are confirmed not supported by this component:
+
+Reason | Device | Model Version | Wiki | MIoT Specification
+---|---|---|---|---
+Proprietary chip | Mi Air Purifier 2S | zhimi.airpurifier.mc1 | [link](../../wiki/Xiaomi-Mi-Air-Purifier-2S)|[link](https://home.miot-spec.com/spec/zhimi.airpurifier.mc1)
 
 ## Building a firmware
 

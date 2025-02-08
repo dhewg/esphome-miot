@@ -2,7 +2,7 @@
 
 These [ESPHome](https://esphome.io/) components are designed for [MIoT devices](https://home.miot-spec.com/) which adhere to the [Xiaomi MIoT Serial Communication](https://github.com/blakadder/miot) protocol.
 
-Such devices contain two microcontrollers, one actually controls the hardware, and the other acts as a LAN/cloud gateway.
+Such devices contain two microcontrollers, one actually controls the hardware (MCU), and the other acts as a LAN/cloud gateway.
 
 These components allow you to replace the firmware on the latter, hence liberating your devices from the vendor cloud.
 
@@ -33,21 +33,19 @@ Some of the devices have more than one model (like Mi Air Purifier 3C). If their
 
 ## Unsupported devices
 
-- Devices using only the ESP microcontroller to directly control the hardware.
-  
-  For these, this component will not work, but you can create an ESPHome 
-  configuration directly;
-- Devices using a proprietary Xiaomi WiFi microcontroller. These are not 
-  flashable with ESPHome;
-- Devices that use the legacy `miio` protocol. These may have an ESP chip and a
-  separate microcontroller, but the communication protocol is unsupported by
-  this component.
+- Devices without a dedicated MCU, using only the ESP chip to directly control the hardware.
 
-  If the device has the `miio2miot` tag on the 
-  [Xiaomi MIoT Spec](https://home.miot-spec.com/) site, or if you see messages
-  like `props power "on"` on the serial bus, this is the case.
+  As these components are designed around the communication protocol between the two microcontrollers they're of no use for such devices.
+- Devices using a proprietary Xiaomi WiFi microcontroller.
 
-The following devices are confirmed not supported by this component:
+  That hardware is currently unsupported by PlatformIO and hence ESPHome.
+- Devices that use the legacy `miio` protocol.
+
+  Such devices may have an ESP chip and a separate microcontroller, but the communication protocol is unsupported by these components.
+
+  If the device has the `miio2miot` tag on the [Xiaomi MIoT Spec](https://home.miot-spec.com/) site, or if you see messages like `props power "on"` on the serial bus, this is the case.
+
+Known unsupported devices:
 
 Reason | Device | Model Version | Wiki | MIoT Specification
 ---|---|---|---|---

@@ -51,6 +51,7 @@ Reason | Device | Model Version | Link | MIoT Specification
 ---|---|---|---|---
 Proprietary chip | Mi Air Purifier 2S | zhimi.airpurifier.mc1 | [link](../../wiki/Xiaomi-Mi-Air-Purifier-2S)|[link](https://home.miot-spec.com/spec/zhimi.airpurifier.mc1)
 Proprietary chip | Xiaomi Air Purifier 4 Lite (CN Model) | zhimi.airp.rma3 | [link](../../issues/34)|[link](https://home.miot-spec.com/spec/zhimi.airp.rma3)
+Proprietary chip | Smartmi Evaporative Humidifier| zhimi.humidifier.cb1 | [link](../../issues/26#issuecomment-2417148320)|[link](https://home.miot-spec.com/spec/zhimi.humidifier.cb1)
 
 ## Building a firmware
 

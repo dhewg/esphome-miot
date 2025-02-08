@@ -47,9 +47,10 @@ Some of the devices have more than one model (like Mi Air Purifier 3C). If their
 
 Known unsupported devices:
 
-Reason | Device | Model Version | Wiki | MIoT Specification
+Reason | Device | Model Version | Link | MIoT Specification
 ---|---|---|---|---
 Proprietary chip | Mi Air Purifier 2S | zhimi.airpurifier.mc1 | [link](../../wiki/Xiaomi-Mi-Air-Purifier-2S)|[link](https://home.miot-spec.com/spec/zhimi.airpurifier.mc1)
+Proprietary chip | Xiaomi Air Purifier 4 Lite (CN Model) | zhimi.airp.rma3 | [link](../../issues/34)|[link](https://home.miot-spec.com/spec/zhimi.airp.rma3)
 
 ## Building a firmware
 

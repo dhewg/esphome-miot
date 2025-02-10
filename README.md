@@ -8,10 +8,22 @@ These components allow you to replace the firmware on the latter, hence liberati
 
 Since this uses [ESPHome](https://esphome.io/), adding your liberated devices to [Home Assistant](https://www.home-assistant.io/) becomes a breeze with the [official integration](https://www.home-assistant.io/integrations/esphome/):
 
-![controls](https://github.com/dhewg/esphome-miot/assets/605548/279d997c-54d0-48df-9a50-9b2971350077)
-![sensors](https://github.com/dhewg/esphome-miot/assets/605548/59bd38e6-13a7-41d9-a794-1ab3af165d0b)
-![config](https://github.com/dhewg/esphome-miot/assets/605548/a834ad8a-0a83-4559-8d53-7538449e51d5)
-![diag](https://github.com/dhewg/esphome-miot/assets/605548/6e73d82a-2c9d-4775-a065-49198f611811)
+<a href="https://github.com/dhewg/esphome-miot/assets/605548/279d997c-54d0-48df-9a50-9b2971350077">
+    <img src="https://github.com/dhewg/esphome-miot/assets/605548/279d997c-54d0-48df-9a50-9b2971350077" width="200">
+</a>
+
+<a href="https://github.com/dhewg/esphome-miot/assets/605548/59bd38e6-13a7-41d9-a794-1ab3af165d0b">
+    <img src="https://github.com/dhewg/esphome-miot/assets/605548/59bd38e6-13a7-41d9-a794-1ab3af165d0b" width="200">
+</a>
+
+<a href="https://github.com/dhewg/esphome-miot/assets/605548/a834ad8a-0a83-4559-8d53-7538449e51d5">
+    <img src="https://github.com/dhewg/esphome-miot/assets/605548/a834ad8a-0a83-4559-8d53-7538449e51d5" width="200">
+</a>
+
+<a href="https://github.com/dhewg/esphome-miot/assets/605548/6e73d82a-2c9d-4775-a065-49198f611811">
+    <img src="https://github.com/dhewg/esphome-miot/assets/605548/6e73d82a-2c9d-4775-a065-49198f611811" width="200">
+</a>
+
 
 ## Supported devices
 
@@ -28,6 +40,7 @@ Xiaomi Mi Smart Standing Fan 2 | dmaker.fan.p18 |  | [dmaker.fan.p18](config/dma
 Xiaomi Smart Pet Food Feeder | mmgg.feeder.fi1 | [link](../../wiki/Xiaomi-Smart-Pet-Food-Feeder) | [mmgg.feeder.fi1](config/mmgg.feeder.fi1.yaml) | [link](https://home.miot-spec.com/spec/mmgg.feeder.fi1)
 Smartmi Evaporative Humidifier 2 | zhimi.humidifier.ca4 |  | [zhimi.humidifier.ca4](config/zhimi.humidifier.ca4.yaml) | [link](https://home.miot-spec.com/pec/zhimi.humidifier.ca4)
 Smartmi Air Purifier | zhimi.airpurifier.za1 |  | [zhimi.airpurifier.za1](config/zhimi.airpurifier.za1.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airpurifier.za1)
+Mi Smart Standing Fan 2 Lite | dmaker.fan.1c | [link](../../wiki/Smart-Standing-Fan-2-Lite) | [dmaker.fan.1c](config/dmaker.fan.1c.yaml) | [link](https://home.miot-spec.com/spec?type=urn:miot-spec-v2:device:fan:0000A005:dmaker-1c:1)
 
 Some of the devices have more than one model (like Mi Air Purifier 3C). If their MIoT specifications are compatible, the ESPHome config will be usable with all of them.
 

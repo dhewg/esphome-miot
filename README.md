@@ -8,10 +8,10 @@ These components allow you to replace the firmware on the latter, hence liberati
 
 Since this uses [ESPHome](https://esphome.io/), adding your liberated devices to [Home Assistant](https://www.home-assistant.io/) becomes a breeze with the [official integration](https://www.home-assistant.io/integrations/esphome/):
 
-![controls](https://github.com/dhewg/esphome-miot/assets/605548/279d997c-54d0-48df-9a50-9b2971350077)
-![sensors](https://github.com/dhewg/esphome-miot/assets/605548/59bd38e6-13a7-41d9-a794-1ab3af165d0b)
-![config](https://github.com/dhewg/esphome-miot/assets/605548/a834ad8a-0a83-4559-8d53-7538449e51d5)
-![diag](https://github.com/dhewg/esphome-miot/assets/605548/6e73d82a-2c9d-4775-a065-49198f611811)
+![controls](screenshots/purifier-controls.png)
+![sensors](screenshots/purifier-sensors.png)
+![configuration](screenshots/purifier-configuration.png)
+![diagnostic](screenshots/purifier-diagnostic.png)
 
 ## Supported devices
 

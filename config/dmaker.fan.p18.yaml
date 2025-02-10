@@ -58,13 +58,13 @@ switch:
     name: "Power"
     icon: "mdi:power"
     on_turn_off:
-      - lambda: |- 
+      - lambda: |-
           if(id(template_fan).state == true) {
             auto call = id(template_fan).turn_off();
             call.perform();
           }
     on_turn_on:
-      - lambda: |- 
+      - lambda: |-
           if(id(template_fan).state == false) {
             auto call = id(template_fan).turn_on();
             call.perform();
@@ -110,7 +110,7 @@ switch:
     name: "Child Lock"
     icon: "mdi:lock"
     entity_category: config
-  
+
 select:
   - platform: "miot"
     id: "mode"

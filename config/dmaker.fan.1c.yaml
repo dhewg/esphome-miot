@@ -1,29 +1,27 @@
+# https://home.miot-spec.com/spec/dmaker.fan.1c
+
 external_components:
   source: github://dhewg/esphome-miot@main
 
 esphome:
-  name: changeme
-  friendly_name: changeme
+  name: standing-fan
+  friendly_name: Smart Standing Fan 2 Lite
+  comment: Xiaomi Mi Smart Standing Fan 2 Lite (dmaker.fan.1c)
+  project:
+    name: "dhewg.esphome-miot"
+    version: "dmaker.fan.p18"
 
 esp8266:
   board: esp_wroom_02
 
-time:
-  - platform: sntp
-    id: sntp_time
-    timezone: Europe/Berlin
-    servers:
-     - 0.pool.ntp.org
-     - 1.pool.ntp.org
-     - 2.pool.ntp.org
-
-# Enable logging
 logger:
+  level: DEBUG
+  # Important: Disable UART1 logging to avoid hardware errors on main UART0
+  baud_rate: 0
 
-# Enable Home Assistant API
 api:
   encryption:
-    key: "changeme"
+    key: !secret api_encryption_key
   reboot_timeout: 0s
   services:
     - service: mcu_command
@@ -34,18 +32,13 @@ api:
 
 ota:
   - platform: esphome
-    password: !secret ota_pw
+    password: !secret ota_password
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
-  power_save_mode: none
-  fast_connect: True
-
-  # Enable fallback hotspot (captive portal) in case wifi connection fails
   ap:
-    ssid: "changeme"
-    password: !secret fallback_pass
+    password: !secret wifi_ap_password
 
 captive_portal:
 
@@ -65,13 +58,13 @@ switch:
     name: "Power"
     icon: "mdi:power"
     on_turn_off:
-      - lambda: |- 
+      - lambda: |-
           if(id(template_fan).state == true) {
             auto call = id(template_fan).turn_off();
             call.perform();
           }
     on_turn_on:
-      - lambda: |- 
+      - lambda: |-
           if(id(template_fan).state == false) {
             auto call = id(template_fan).turn_on();
             call.perform();
@@ -117,7 +110,7 @@ switch:
     name: "Child Lock"
     icon: "mdi:lock"
     entity_category: config
-  
+
 select:
   - platform: "miot"
     id: "mode"
@@ -127,7 +120,7 @@ select:
     icon: "mdi:leaf"
     options:
       0: "Direct Breeze"
-      1: "Natural Breeze"
+      1: "Sleep Mode"
     on_value:
       - lambda: |-
           if(id(template_fan).preset_mode != x) {
@@ -162,16 +155,6 @@ button:
     miot_aiid: 1
     name: "Toggle Power"
     icon: "mdi:power-cycle"
-  - platform: "miot"
-    name: "Toggle Mode"
-    icon: "mdi:leaf"
-    miot_siid: 4
-    miot_aiid: 1
-  - platform: "miot"
-    name: "Toggle Speed"
-    icon: "mdi:fan"
-    miot_siid: 4
-    miot_aiid: 2
 
 fan:
   - platform: "template"
@@ -181,7 +164,7 @@ fan:
     speed_count: 100
     preset_modes:
       - "Direct Breeze"
-      - "Natural Breeze"
+      - "Sleep Mode"
     restore_mode: NO_RESTORE
     on_turn_on:
       - lambda: if (id(on).state == false) id(on).turn_on();

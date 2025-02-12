@@ -25,7 +25,7 @@ void MiotFan::setup() {
   if (this->oscillating_siid_ != 0 && this->oscillating_piid_ != 0) {
     this->parent_->register_listener(this->oscillating_siid_, this->oscillating_piid_, true, mvtString, [this](const MiotValue &value) {
       this->oscillating = value.as_string == "true";
-      ESP_LOGV(TAG, "MCU reported oscillating %" PRIu32 ":%" PRIu32 " is: %u", this->oscillating_siid_, this->oscillating_piid_, ONOFF(this->oscillating));
+      ESP_LOGV(TAG, "MCU reported oscillating %" PRIu32 ":%" PRIu32 " is: %s", this->oscillating_siid_, this->oscillating_piid_, ONOFF(this->oscillating));
       this->publish_state();
     });
   }

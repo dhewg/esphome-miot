@@ -99,8 +99,8 @@ void MiotFan::control(const fan::FanCall &call) {
     this->parent_->set_property(this->direction_siid_, this->direction_piid_, MiotValue(*call.get_direction() == fan::FanDirection::REVERSE ? "true" : "false"));
   if (this->preset_modes_siid_ != 0 && this->preset_modes_piid_ != 0) {
     const std::string &mode = call.get_preset_mode();
-    auto it = std::find_if(preset_modes_.begin(),
-                           preset_modes_.end(),
+    auto it = std::find_if(preset_modes_.cbegin(),
+                           preset_modes_.cend(),
                            [mode](auto && pair) {
                               return pair.second == mode;
                            });

@@ -9,6 +9,7 @@ static const char *const TAG = "miot.fan";
 // all properties are always polled
 // "state" and "oscillating" are true booleans ("true" and "false" on the wire)
 // "direction" is a true boolean as well, where "true" means REVERSE
+// "speed" values are 0=off [1:]=(max-min)/step
 // what about "restore_mode"?
 
 void MiotFan::setup() {
@@ -20,7 +21,7 @@ void MiotFan::setup() {
 
   this->parent_->register_listener(this->speed_siid_, this->speed_piid_, true, mvtUInt, [this](const MiotValue &value) {
     ESP_LOGV(TAG, "MCU reported speed %" PRIu32 ":%" PRIu32 " is: %u", this->speed_siid_, this->speed_piid_, value.as_uint);
-    this->speed = value.as_uint / this->speed_step_ - this->speed_min_ + 1;
+    this->speed = (value.as_uint - this->speed_min_) / this->speed_step_ + 1;
     this->publish_state();
   });
 
@@ -57,6 +58,7 @@ void MiotFan::dump_config() {
   ESP_LOGCONFIG(TAG, "  State PIID: %" PRIu32, this->state_piid_);
   ESP_LOGCONFIG(TAG, "  Speed SIID: %" PRIu32, this->speed_siid_);
   ESP_LOGCONFIG(TAG, "  Speed PIID: %" PRIu32, this->speed_piid_);
+  ESP_LOGCONFIG(TAG, "  Speed Min/Max/Step: %" PRIu32 "/%" PRIu32 "/%" PRIu32, this->speed_min_, this->speed_max_, this->speed_step_);
   if (this->oscillating_siid_ != 0 && this->oscillating_piid_ != 0) {
     ESP_LOGCONFIG(TAG, "  Oscillating SIID: %" PRIu32, this->oscillating_siid_);
     ESP_LOGCONFIG(TAG, "  Oscillating PIID: %" PRIu32, this->oscillating_piid_);
@@ -68,7 +70,7 @@ void MiotFan::dump_config() {
   if (this->preset_modes_siid_ != 0 && this->preset_modes_piid_ != 0) {
     ESP_LOGCONFIG(TAG, "  Preset Modes SIID: %" PRIu32, this->preset_modes_siid_);
     ESP_LOGCONFIG(TAG, "  Preset Modes PIID: %" PRIu32, this->preset_modes_piid_);
-    ESP_LOGCONFIG(TAG, "  Preset Modes are:");
+    ESP_LOGCONFIG(TAG, "  Preset Modes:");
     for (auto const &it : this->preset_modes_)
       ESP_LOGCONFIG(TAG, "    %u: %s", it.first, it.second.c_str());
   }

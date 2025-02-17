@@ -35,7 +35,7 @@ void MiotFan::setup() {
   if (this->direction_siid_ != 0 && this->direction_piid_ != 0)
     this->parent_->register_listener(this->direction_siid_, this->direction_piid_, true, mvtString, [this](const MiotValue &value) {
       this->direction = value.as_string == "true" ? fan::FanDirection::REVERSE : fan::FanDirection::FORWARD;
-      ESP_LOGV(TAG, "MCU reported reverse direction %" PRIu32 ":%" PRIu32 " is: %s", this->direction_siid_, this->direction_piid_, ONOFF(this->direction == fan::FanDirection::REVERSE));
+      ESP_LOGV(TAG, "MCU reported direction %" PRIu32 ":%" PRIu32 " is: %s", this->direction_siid_, this->direction_piid_, this->direction == fan::FanDirection::REVERSE ? "REVERSE" : "FORWARD");
       this->publish_state();
     });
 

@@ -10,6 +10,9 @@ static const char *const TAG = "miot.fan";
 // "state" and "oscillating" are true booleans ("true" and "false" on the wire)
 // "direction" is a true boolean as well, where "true" means REVERSE
 // "speed" values are 0=off [1:]=(max-min)/step
+// preset modes are implemented as described here: https://developers.home-assistant.io/docs/core/entity/fan/#preset-modes
+// setting a speed percentage wipes the preset, and a set preset ignores the speed percentage
+// if the device requires setting a manual preset mode, add that with an empty string
 // what about "restore_mode"?
 
 void MiotFan::setup() {
@@ -42,12 +45,16 @@ void MiotFan::setup() {
   if (this->preset_modes_siid_ != 0 && this->preset_modes_piid_ != 0)
     this->parent_->register_listener(this->preset_modes_siid_, this->preset_modes_piid_, true, mvtUInt, [this](const MiotValue &value) {
       ESP_LOGV(TAG, "MCU reported preset mode %" PRIu32 ":%" PRIu32 " is: %" PRIu32, this->preset_modes_siid_, this->preset_modes_piid_, value.as_uint);
-      auto it = preset_modes_.find(value.as_uint);
-      if (it == preset_modes_.end()) {
-        ESP_LOGE(TAG, "Unknown preset mode value %" PRIu32 "", value.as_uint);
-        return;
+      if (manual_speed_preset_.has_value() && value.as_uint == *manual_speed_preset_) {
+        this->preset_mode.clear();
+      } else {
+        auto it = preset_modes_.find(value.as_uint);
+        if (it == preset_modes_.end()) {
+          ESP_LOGE(TAG, "Unknown preset mode value %" PRIu32 "", value.as_uint);
+          return;
+        }
+        this->preset_mode = it->second;
       }
-      this->preset_mode = it->second;
       this->publish_state();
     });
 }
@@ -91,26 +98,33 @@ fan::FanTraits MiotFan::get_traits() {
 }
 
 void MiotFan::control(const fan::FanCall &call) {
-  if (call.get_state().has_value())
-    this->parent_->set_property(this->state_siid_, this->state_piid_, MiotValue(*call.get_state() ? "true" : "false"));
-  if (call.get_speed().has_value())
+  optional<uint8_t> mode;
+
+  const std::string &mode_str = call.get_preset_mode();
+  if (this->preset_modes_siid_ != 0 && this->preset_modes_piid_ != 0 && !mode_str.empty() && mode_str != this->preset_mode) {
+    auto it = std::find_if(preset_modes_.cbegin(),
+                           preset_modes_.cend(),
+                           [mode_str](auto && pair) {
+                              return pair.second == mode_str;
+                           });
+    if (it != preset_modes_.end())
+      mode = it->first;
+  }
+
+  if (mode.has_value())
+    this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*mode));
+  else if (call.get_speed().has_value()) {
+    this->preset_mode.clear();
+    if (manual_speed_preset_.has_value())
+      this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*manual_speed_preset_));
     this->parent_->set_property(this->speed_siid_, this->speed_piid_, MiotValue(this->speed_min_ + *call.get_speed() * this->speed_step_ - 1));
+  }
   if (this->oscillating_siid_ != 0 && this->oscillating_piid_ != 0 && call.get_oscillating().has_value())
     this->parent_->set_property(this->oscillating_siid_, this->oscillating_piid_, MiotValue(*call.get_oscillating() ? "true" : "false"));
   if (this->direction_siid_ != 0 && this->direction_piid_ != 0 && call.get_direction().has_value())
     this->parent_->set_property(this->direction_siid_, this->direction_piid_, MiotValue(*call.get_direction() == fan::FanDirection::REVERSE ? "true" : "false"));
-  const std::string &mode = call.get_preset_mode();
-  if (this->preset_modes_siid_ != 0 && this->preset_modes_piid_ != 0 && !mode.empty()) {
-    auto it = std::find_if(preset_modes_.cbegin(),
-                           preset_modes_.cend(),
-                           [mode](auto && pair) {
-                              return pair.second == mode;
-                           });
-    if (it != preset_modes_.end())
-      this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(it->first));
-    else
-      ESP_LOGE(TAG, "Unknown preset mode '%s'", mode.c_str());
-  }
+  if (call.get_state().has_value())
+    this->parent_->set_property(this->state_siid_, this->state_piid_, MiotValue(*call.get_state() ? "true" : "false"));
 }
 
 }  // namespace miot

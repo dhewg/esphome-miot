@@ -74,7 +74,7 @@ fan:
       options:
         0: "Auto"
         1: "Sleep"
-        2: "Favorite"
+        2: ""
 
 switch:
   - platform: "miot"

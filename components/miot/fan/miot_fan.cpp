@@ -45,7 +45,7 @@ void MiotFan::setup() {
   if (this->preset_modes_siid_ != 0 && this->preset_modes_piid_ != 0)
     this->parent_->register_listener(this->preset_modes_siid_, this->preset_modes_piid_, true, mvtUInt, [this](const MiotValue &value) {
       ESP_LOGV(TAG, "MCU reported preset mode %" PRIu32 ":%" PRIu32 " is: %" PRIu32, this->preset_modes_siid_, this->preset_modes_piid_, value.as_uint);
-      if (manual_speed_preset_.has_value() && value.as_uint == *manual_speed_preset_) {
+      if (this->manual_speed_preset_.has_value() && value.as_uint == *this->manual_speed_preset_) {
         this->preset_mode.clear();
       } else {
         auto it = preset_modes_.find(value.as_uint);
@@ -80,6 +80,8 @@ void MiotFan::dump_config() {
     ESP_LOGCONFIG(TAG, "  Preset Modes:");
     for (auto const &it : this->preset_modes_)
       ESP_LOGCONFIG(TAG, "    %u: %s", it.first, it.second.c_str());
+    if (this->manual_speed_preset_.has_value())
+      ESP_LOGCONFIG(TAG, "  Manual Preset Mode: %" PRIu8, *this->manual_speed_preset_);
   }
 }
 
@@ -115,8 +117,8 @@ void MiotFan::control(const fan::FanCall &call) {
     this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*mode));
   else if (call.get_speed().has_value()) {
     this->preset_mode.clear();
-    if (manual_speed_preset_.has_value())
-      this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*manual_speed_preset_));
+    if (this->manual_speed_preset_.has_value())
+      this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*this->manual_speed_preset_));
     this->parent_->set_property(this->speed_siid_, this->speed_piid_, MiotValue(this->speed_min_ + *call.get_speed() * this->speed_step_ - 1));
   }
   if (this->oscillating_siid_ != 0 && this->oscillating_piid_ != 0 && call.get_oscillating().has_value())

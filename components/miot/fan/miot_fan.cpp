@@ -12,8 +12,8 @@ static const char *const TAG = "miot.fan";
 // "speed" values are 0=off [1:]=(max-min)/step
 // preset modes are implemented as described here: https://developers.home-assistant.io/docs/core/entity/fan/#preset-modes
 // setting a speed percentage unsets the preset
-// setting a preset ignores the speed percentage
-// speed values are not reported if the device is off or in preset mode
+// setting a preset sets the speed percentage to zero
+// mcu speed values are not reported if the device is off or in preset mode
 // an empty preset mode string declares the corresponding value as "manual mode", which is set before setting a manual speed
 // what about "restore_mode"?
 

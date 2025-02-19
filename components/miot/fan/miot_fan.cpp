@@ -11,8 +11,10 @@ static const char *const TAG = "miot.fan";
 // "direction" is a true boolean as well, where "true" means REVERSE
 // "speed" values are 0=off [1:]=(max-min)/step
 // preset modes are implemented as described here: https://developers.home-assistant.io/docs/core/entity/fan/#preset-modes
-// setting a speed percentage wipes the preset, and a set preset ignores the speed percentage
-// if the device requires setting a manual preset mode, add that with an empty string
+// setting a speed percentage unsets the preset
+// setting a preset ignores the speed percentage
+// speed values are not reported if the device is off or in preset mode
+// an empty preset mode string declares the corresponding value as "manual mode", which is set before setting a manual speed
 // what about "restore_mode"?
 
 void MiotFan::setup() {
@@ -23,6 +25,14 @@ void MiotFan::setup() {
   });
 
   this->parent_->register_listener(this->speed_siid_, this->speed_piid_, true, mvtUInt, [this](const MiotValue &value) {
+    if (!this->state) {
+      ESP_LOGW(TAG, "Ignoring MCU reported speed, fan is off");
+      return;
+    }
+    if (!this->preset_mode.empty()) {
+      ESP_LOGW(TAG, "Ignoring MCU reported speed, in preset mode");
+      return;
+    }
     this->speed = (value.as_uint - this->speed_min_) / this->speed_step_ + 1;
     ESP_LOGV(TAG, "MCU reported speed %" PRIu32 ":%" PRIu32 " is: %" PRIi32 " (raw: %" PRIu32 ")", this->speed_siid_, this->speed_piid_, this->speed, value.as_uint);
     this->publish_state();
@@ -54,6 +64,7 @@ void MiotFan::setup() {
           return;
         }
         this->preset_mode = it->second;
+        this->speed = 0;
       }
       this->publish_state();
     });
@@ -113,9 +124,10 @@ void MiotFan::control(const fan::FanCall &call) {
       mode = it->first;
   }
 
-  if (mode.has_value())
+  if (mode.has_value()) {
+    this->speed = 0;
     this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*mode));
-  else if (call.get_speed().has_value()) {
+  } else if (call.get_speed().has_value()) {
     this->preset_mode.clear();
     if (this->manual_speed_preset_.has_value())
       this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*this->manual_speed_preset_));

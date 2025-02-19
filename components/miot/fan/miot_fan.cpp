@@ -26,7 +26,8 @@ void MiotFan::setup() {
 
   this->parent_->register_listener(this->speed_siid_, this->speed_piid_, true, mvtUInt, [this](const MiotValue &value) {
     if (!this->state) {
-      ESP_LOGW(TAG, "Ignoring MCU reported speed, fan is off");
+      if (value.as_uint != 0)
+        ESP_LOGW(TAG, "Ignoring MCU reported speed, fan is off");
       return;
     }
     if (!this->preset_mode.empty()) {

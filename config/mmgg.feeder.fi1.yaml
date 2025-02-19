@@ -4,7 +4,7 @@
 # https://github.com/cristianchelu/dispenser-schedule-card
 
 external_components:
-  source: github://dhewg/esphome-miot@main
+  source: github://dhewg/esphome-miot@fan
 
 substitutions:
   # Timezone for automatic daylight savings time (DST) adjustment

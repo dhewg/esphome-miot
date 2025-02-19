@@ -2,7 +2,7 @@
 # https://home.miot-spec.com/spec/zhimi.airpurifier.mb4
 
 external_components:
-  source: github://dhewg/esphome-miot@main
+  source: github://dhewg/esphome-miot@fan
 
 esphome:
   name: purifier

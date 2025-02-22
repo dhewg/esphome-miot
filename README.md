@@ -24,6 +24,7 @@ Mi Air Purifier 3C | zhimi.airp.mb4a <br> zhimi.airpurifier.mb4 |[link](../../wi
 Xiaomi Smart Air Purifier 4 | zhimi.airp.mb5 | [link](../../wiki/Xiaomi-Smart-Air-Purifier-4) | [zhimi.airp.mb5](config/zhimi.airp.mb5.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb5)
 Xiaomi Smart Air Purifier 4 Lite | zhimi.airp.rmb1 | [link](../../wiki/Xiaomi-Smart-Air-Purifier-4-Lite-(zhimi.airp.rmb1)) | [zhimi.airp.rmb1](config/zhimi.airp.rmb1.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.rmb1)
 Xiaomi Smart Air Purifier 4 Pro | zhimi.airp.vb4 |  | [zhimi.airp.vb4](config/zhimi.airp.vb4.yaml) | [link](https://home.miot-spec.com/spec?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-vb4:1)
+Mi Air Purifier Pro H | zhimi.airpurifier.vb2 |  | [zhimi.airpurifier.vb2](config/zhimi.airpurifier.vb2.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airpurifier.vb2)
 Smartmi Evaporative Humidifier 2 | zhimi.humidifier.ca4 |  | [zhimi.humidifier.ca4](config/zhimi.humidifier.ca4.yaml) | [link](https://home.miot-spec.com/spec/zhimi.humidifier.ca4)
 Smartmi Air Purifier | zhimi.airpurifier.za1 |  | [zhimi.airpurifier.za1](config/zhimi.airpurifier.za1.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airpurifier.za1)
 Mi Smart Standing Fan 2 | dmaker.fan.p18 |  | [dmaker.fan.p18](config/dmaker.fan.p18.yaml) | [link](https://home.miot-spec.com/spec/dmaker.fan.p18)

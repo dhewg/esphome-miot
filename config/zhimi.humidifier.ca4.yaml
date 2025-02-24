@@ -55,12 +55,19 @@ uart:
 miot:
   id: miot_main
 
-switch:
+fan:
   - platform: "miot"
-    miot_siid: 2
-    miot_piid: 1
-    name: "Power"
-    icon: mdi:power
+    name: "Fan"
+    state:
+      miot_siid: 2
+      miot_piid: 1
+    speed:
+      miot_siid: 2
+      miot_piid: 5
+      min_value: 0
+      max_value: 3
+
+switch:
   - platform: "miot"
     miot_siid: 2
     miot_piid: 8
@@ -86,16 +93,6 @@ switch:
     entity_category: config
 
 select:
-  - platform: "miot"
-    miot_siid: 2
-    miot_piid: 5
-    name: "Fan level"
-    icon: mdi:fan
-    options:
-      0: "Auto"
-      1: "Low"
-      2: "Medium"
-      3: "High"
   - platform: "miot"
     miot_siid: 5
     miot_piid: 2

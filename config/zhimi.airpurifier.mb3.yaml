@@ -61,12 +61,27 @@ miot:
   miot_heartbeat_siid: 13
   miot_heartbeat_piid: 9
 
-switch:
+fan:
   - platform: "miot"
-    miot_siid: 2
-    miot_piid: 2
-    name: "Power"
-    icon: mdi:power
+    name: "Fan"
+    state:
+      miot_siid: 2
+      miot_piid: 2
+    speed:
+      miot_siid: 10
+      miot_piid: 7
+      min_value: 300
+      max_value: 2300
+    preset_modes:
+      miot_siid: 2
+      miot_piid: 5
+      options:
+        0: "Auto"
+        1: "Sleep"
+        2: "Favorite"
+        3: ""
+
+switch:
   - platform: "miot"
     miot_siid: 5
     miot_piid: 1
@@ -89,15 +104,6 @@ binary_sensor:
     entity_category: diagnostic
 
 select:
-  - platform: "miot"
-    miot_siid: 2
-    miot_piid: 5
-    name: "Mode"
-    options:
-      0: "Auto"
-      1: "Sleep"
-      2: "Favorite"
-      3: "None"
   - platform: "miot"
     miot_siid: 2
     miot_piid: 4
@@ -161,14 +167,6 @@ text_sensor:
     name: "AQI Sensor State"
 
 number:
-  - platform: "miot"
-    miot_siid: 10
-    miot_piid: 7
-    name: "Motor Favorite Speed"
-    icon: mdi:speedometer
-    min_value: 300
-    max_value: 2300
-    step: 1
   - platform: "miot"
     miot_siid: 10
     miot_piid: 10

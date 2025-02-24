@@ -59,13 +59,26 @@ uart:
 miot:
   id: miot_main
 
-switch:
+fan:
   - platform: "miot"
-    miot_siid: 2
-    miot_piid: 1
-    name: "Power"
-    icon: mdi:power
-    device_class: outlet
+    name: "Fan"
+    state:
+      miot_siid: 2
+      miot_piid: 1
+    speed:
+      miot_siid: 10
+      miot_piid: 10
+      min_value: 0
+      max_value: 14
+    preset_modes:
+      miot_siid: 2
+      miot_piid: 5
+      options:
+        0: "Auto"
+        1: "Sleep"
+        2: ""
+
+switch:
   - platform: "miot"
     miot_siid: 5
     miot_piid: 1
@@ -86,15 +99,6 @@ switch:
     entity_category: config
 
 select:
-  - platform: "miot"
-    miot_siid: 2
-    miot_piid: 5
-    name: "Mode"
-    icon: mdi:auto-mode
-    options:
-      0: "Auto"
-      1: "Sleep"
-      2: "Favorite"
   - platform: "miot"
     miot_siid: 6
     miot_piid: 1
@@ -125,16 +129,6 @@ select:
     disabled_by_default: true
 
 number:
-  - platform: "miot"
-    miot_siid: 10
-    miot_piid: 10
-    name: "Favorite Fan Level"
-    device_class: wind_speed
-    icon: mdi:fan
-    mode: slider
-    min_value: 0
-    max_value: 14
-    step: 1
   - platform: "miot"
     miot_siid: 9
     miot_piid: 1

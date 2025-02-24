@@ -58,12 +58,26 @@ miot:
   miot_heartbeat_siid: 9
   miot_heartbeat_piid: 4
 
-switch:
+fan:
   - platform: "miot"
-    miot_siid: 2
-    miot_piid: 1
-    name: "Power"
-    icon: mdi:power
+    name: "Fan"
+    state:
+      miot_siid: 2
+      miot_piid: 1
+    speed:
+      miot_siid: 9
+      miot_piid: 3
+      min_value: 300
+      max_value: 2200
+    preset_modes:
+      miot_siid: 2
+      miot_piid: 4
+      options:
+        0: "Auto"
+        1: "Sleep"
+        2: ""
+
+switch:
   - platform: "miot"
     miot_siid: 6
     miot_piid: 1
@@ -76,16 +90,6 @@ switch:
     name: "Child Lock"
     icon: mdi:lock
     entity_category: config
-
-select:
-  - platform: "miot"
-    miot_siid: 2
-    miot_piid: 4
-    name: "Mode"
-    options:
-      0: "Auto"
-      1: "Sleep"
-      2: "Favorite"
 
 text_sensor:
   - platform: "miot"
@@ -114,14 +118,6 @@ number:
     entity_category: config
     min_value: 0
     max_value: 8
-    step: 1
-  - platform: "miot"
-    miot_siid: 9
-    miot_piid: 3
-    name: "Favorite Speed"
-    icon: mdi:speedometer
-    min_value: 300
-    max_value: 2200
     step: 1
 
 sensor:

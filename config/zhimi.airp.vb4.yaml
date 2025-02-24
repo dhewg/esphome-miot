@@ -57,12 +57,27 @@ miot:
   miot_heartbeat_siid: 11
   miot_heartbeat_piid: 4
 
-switch:
+fan:
   - platform: "miot"
-    miot_siid: 2
-    miot_piid: 1
-    name: "Power"
-    icon: mdi:power
+    name: "Fan"
+    state:
+      miot_siid: 2
+      miot_piid: 1
+    speed:
+      miot_siid: 9
+      miot_piid: 4
+      min_value: 0
+      max_value: 2000
+    preset_modes:
+      miot_siid: 2
+      miot_piid: 4
+      options:
+        0: "Auto"
+        1: "Sleep"
+        2: "Favorite"
+        3: ""
+
+switch:
   - platform: "miot"
     miot_siid: 2
     miot_piid: 6
@@ -91,15 +106,6 @@ binary_sensor:
     entity_category: diagnostic
 
 select:
-  - platform: "miot"
-    miot_siid: 2
-    miot_piid: 4
-    name: "Mode"
-    options:
-      0: "Auto"
-      1: "Sleep"
-      2: "Favorite"
-      3: "Manual"
   - platform: "miot"
     miot_siid: 2
     miot_piid: 5
@@ -159,14 +165,6 @@ number:
     icon: mdi:speedometer
     min_value: 200
     max_value: 2300
-    step: 1
-  - platform: "miot"
-    miot_siid: 9
-    miot_piid: 4
-    name: "Manual Speed"
-    icon: mdi:speedometer
-    min_value: 0
-    max_value: 2000
     step: 1
   - platform: "miot"
     miot_siid: 9

@@ -8,7 +8,7 @@ These components allow you to replace the firmware on the latter, hence liberati
 
 Since this uses [ESPHome](https://esphome.io/), adding your liberated devices to [Home Assistant](https://www.home-assistant.io/) becomes a breeze with the [official integration](https://www.home-assistant.io/integrations/esphome/):
 
-![controls](screenshots/purifier-controls.png)
+![fan](screenshots/purifier-fan.png)
 ![sensors](screenshots/purifier-sensors.png)
 ![configuration](screenshots/purifier-configuration.png)
 ![diagnostic](screenshots/purifier-diagnostic.png)

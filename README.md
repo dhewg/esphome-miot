@@ -54,6 +54,7 @@ Mi Air Purifier 2S | zhimi.airpurifier.mc1 | Proprietary chip | [link](../../wik
 Xiaomi Air Purifier 4 Lite (CN Model) | zhimi.airp.rma3 | No dedicated MCU | [link](../../issues/34)|[link](https://home.miot-spec.com/spec/zhimi.airp.rma3)
 Xiaomi Smart Air Purifier 4 Compact | zhimi.airp.cpa4 | No dedicated MCU | [link](../../issues/22#issuecomment-2137163103)|[link](https://home.miot-spec.com/spec/zhimi.airp.cpa4)
 Smartmi Evaporative Humidifier| zhimi.humidifier.cb1 | Proprietary chip | [link](../../issues/26#issuecomment-2417148320)|[link](https://home.miot-spec.com/spec/zhimi.humidifier.cb1)
+Xiaomi Smart Tower Fan | dmaker.fan.p39 | Proprietary chip | - |[link](https://home.miot-spec.com/spec/dmaker.fan.p39)
 
 ## Building a firmware
 

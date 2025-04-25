@@ -245,24 +245,9 @@ sensor:
 
 button:
   - platform: "miot"
-    miot_siid: 2
-    miot_aiid: 1
-    name: "Toggle Power"
-    icon: mdi:power
-  - platform: "miot"
     miot_siid: 4
     miot_aiid: 1
     miot_action_args: "3 0"
     name: "Reset Filter Life"
     icon: mdi:restart
     entity_category: config
-  - platform: "miot"
-    miot_siid: 9
-    miot_aiid: 1
-    name: "Toggle Mode"
-    icon: mdi:cached
-  - platform: "miot"
-    miot_siid: 9
-    miot_aiid: 2
-    name: "Toggle Fan Level"
-    icon: mdi:approximately-equal

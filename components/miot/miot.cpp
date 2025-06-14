@@ -322,11 +322,11 @@ const char *Miot::get_net_reply_() {
     return NET_LOCAL;
 #ifdef USE_CAPTIVE_PORTAL
   if (captive_portal::global_captive_portal != nullptr && captive_portal::global_captive_portal->is_active())
-    return NET_OFFLINE;
+    return NET_UAP;
 #endif
   if (network::is_disabled())
     return NET_UNPROV;
-  return NET_UAP;
+  return NET_OFFLINE;
 }
 
 std::string Miot::get_time_reply_(bool posix) {

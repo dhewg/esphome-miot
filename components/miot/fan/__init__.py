@@ -7,7 +7,6 @@ from esphome.const import (
     CONF_MIN_VALUE,
     CONF_OPTIONS,
     CONF_OSCILLATING,
-    CONF_OUTPUT_ID,
     CONF_PRESET_MODES,
     CONF_SPEED,
     CONF_STATE,
@@ -40,9 +39,9 @@ def ensure_option_map(value):
     return value
 
 CONFIG_SCHEMA = cv.All(
-    fan.FAN_SCHEMA.extend(
+    fan.fan_schema(MiotFan)
+    .extend(
         {
-            cv.GenerateID(CONF_OUTPUT_ID): cv.declare_id(MiotFan),
             cv.GenerateID(CONF_MIOT_ID): cv.use_id(Miot),
             cv.Required(CONF_STATE): cv.Schema(
                 {
@@ -85,9 +84,8 @@ CONFIG_SCHEMA = cv.All(
 async def to_code(config):
     parent = await cg.get_variable(config[CONF_MIOT_ID])
 
-    var = cg.new_Pvariable(config[CONF_OUTPUT_ID], parent)
+    var = await fan.new_fan(config, parent)
     await cg.register_component(var, config)
-    await fan.register_fan(var, config)
 
     state = config.get(CONF_STATE)
     cg.add(var.set_state_config(state[CONF_MIOT_SIID], state[CONF_MIOT_PIID]))

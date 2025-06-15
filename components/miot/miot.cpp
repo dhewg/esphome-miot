@@ -37,7 +37,7 @@ static const int RECEIVE_TIMEOUT = 300;
 static const char *const NET_OFFLINE = "offline";
 static const char *const NET_UNPROV = "unprov";
 static const char *const NET_UAP = "uap";
-static const char *const NET_LAN = "lan";
+static const char *const NET_LOCAL = "local";
 static const char *const NET_CLOUD = "cloud";
 static const char *const NET_UPDATING = "updating";
 static const int MAX_COMMAND_LENGTH = 60;
@@ -319,7 +319,7 @@ const char *Miot::get_net_reply_() {
   if (remote_is_connected())
     return NET_CLOUD;
   if (network::is_connected())
-    return NET_LAN;
+    return NET_LOCAL;
 #ifdef USE_CAPTIVE_PORTAL
   if (captive_portal::global_captive_portal != nullptr && captive_portal::global_captive_portal->is_active())
     return NET_UAP;

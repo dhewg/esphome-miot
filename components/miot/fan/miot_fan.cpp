@@ -1,5 +1,10 @@
 #include "esphome/core/log.h"
+#include "esphome/core/version.h"
 #include "miot_fan.h"
+
+#if ESPHOME_VERSION_CODE < VERSION_CODE(2025, 6, 0)
+#error "The fan component requires at least ESPHome 2025.6.0 due to https://github.com/esphome/esphome/pull/8277"
+#endif
 
 namespace esphome {
 namespace miot {

@@ -42,6 +42,18 @@ static const char *const NET_CLOUD = "cloud";
 static const int MAX_COMMAND_LENGTH = 60;
 
 void Miot::setup() {
+  // discard initial incoming serial buffer
+  uint8_t c;
+  while (this->available())
+    if (this->read_byte(&c))
+      if (rx_count_ < MAX_LINE_LENGTH)
+        rx_message_[rx_count_++] = c;
+
+  if (rx_count_ > 0) {
+    ESP_LOGW(TAG, "Discarding initial MCU data: %s", format_hex_pretty(rx_message_, rx_count_));
+    rx_count_ = 0;
+  }
+
   queue_command("MIIO_mcu_version_req");
   queue_net_change_command(true);
 

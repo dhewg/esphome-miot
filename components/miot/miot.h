@@ -64,6 +64,9 @@ class Miot : public Component, public uart::UARTDevice {
     this->heartbeat_siid_ = siid;
     this->heartbeat_piid_ = piid;
   };
+  void set_ota_net_indicator(const std::string &indicator) {
+    this->ota_net_indicator_ = indicator;
+  };
   void register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueType type, const std::function<void(const MiotValue &value)> &func);
   void queue_command(const std::string &cmd);
   void queue_command(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
@@ -95,6 +98,7 @@ class Miot : public Component, public uart::UARTDevice {
   bool expect_action_result_{false};
   uint32_t heartbeat_siid_{0};
   uint32_t heartbeat_piid_{0};
+  std::string ota_net_indicator_;
   std::map<std::pair<uint32_t, uint32_t>, MiotListener> listeners_;
 #ifdef USE_EVENT
   std::map<std::pair<uint32_t, uint32_t>, MiotEventListener> event_listeners_;

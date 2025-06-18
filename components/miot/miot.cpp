@@ -39,7 +39,6 @@ static const char *const NET_UNPROV = "unprov";
 static const char *const NET_UAP = "uap";
 static const char *const NET_LOCAL = "local";
 static const char *const NET_CLOUD = "cloud";
-static const char *const NET_UPDATING = "updating";
 static const int MAX_COMMAND_LENGTH = 60;
 
 void Miot::setup() {
@@ -79,7 +78,7 @@ void Miot::setup() {
       switch (state) {
       case ota::OTA_STARTED:
         // directly send this to indicate a firmware update, as loop() won't get called anymore
-        send_reply_("down MIIO_net_change updating");
+        send_reply_((std::string("down MIIO_net_change ") + ota_net_indicator_).c_str());
         break;
       case ota::OTA_ERROR:
         queue_net_change_command(true);
@@ -136,6 +135,7 @@ void Miot::dump_config() {
     ESP_LOGCONFIG(TAG, "  MCU Version: %s", mcu_version_.c_str());
   ESP_LOGCONFIG(TAG, "  Heartbeat SIID: %" PRIu32, this->heartbeat_siid_);
   ESP_LOGCONFIG(TAG, "  Heartbeat PIID: %" PRIu32, this->heartbeat_piid_);
+  ESP_LOGCONFIG(TAG, "  OTA net indicator: %s", this->ota_net_indicator_.c_str());
 #ifdef USE_TIME
   ESP_LOGCONFIG(TAG, "  Time: AVAILABLE");
 #else

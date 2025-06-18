@@ -54,8 +54,12 @@ void Miot::setup() {
     rx_count_ = 0;
   }
 
-  queue_command("MIIO_mcu_version_req");
+  // these two commands have to be the first two in that order to get
+  // the deerma.humidifier.jsq5 mcu into its main app loop
   queue_net_change_command(true);
+  queue_command("none");
+
+  queue_command("MIIO_mcu_version_req");
 
   this->set_interval("poll", 60000, [this] {
     std::string cmd, part;

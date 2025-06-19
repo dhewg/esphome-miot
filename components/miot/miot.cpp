@@ -406,7 +406,7 @@ void Miot::process_message_(char *msg) {
     global_preferences->reset();
     App.safe_reboot();
   } else {
-    ESP_LOGW(TAG, "Unknown command '%s'", cmd.c_str());
+    ESP_LOGW(TAG, "Unknown command '%s %s'", cmd.c_str(), saveptr);
     send_reply_("error");
   }
 }

@@ -134,6 +134,8 @@ void Miot::dump_config() {
     ESP_LOGCONFIG(TAG, "  Model: %s", model_.c_str());
   if (!mcu_version_.empty())
     ESP_LOGCONFIG(TAG, "  MCU Version: %s", mcu_version_.c_str());
+  ESP_LOGCONFIG(TAG, "  Heartbeat SIID: %" PRIu32, this->heartbeat_siid_);
+  ESP_LOGCONFIG(TAG, "  Heartbeat PIID: %" PRIu32, this->heartbeat_piid_);
 #ifdef USE_TIME
   ESP_LOGCONFIG(TAG, "  Time: AVAILABLE");
 #else

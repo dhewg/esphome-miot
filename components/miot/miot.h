@@ -85,7 +85,7 @@ class Miot : public Component, public uart::UARTDevice {
 
   static const size_t MAX_LINE_LENGTH = 512;
 
-  char rx_message_[MAX_LINE_LENGTH + 1];
+  uint8_t rx_message_[MAX_LINE_LENGTH + 1];
   size_t rx_count_{0};
   uint32_t last_rx_char_timestamp_{0};
   const char *last_net_reply_{nullptr};

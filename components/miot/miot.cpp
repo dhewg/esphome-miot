@@ -96,7 +96,7 @@ void Miot::loop() {
 
   if (rx_count_ > 0 && millis() - last_rx_char_timestamp_ > RECEIVE_TIMEOUT) {
     rx_message_[rx_count_] = 0;
-    ESP_LOGE(TAG, "Timeout while receiving from MCU, dropping message '%s'", rx_message_);
+    ESP_LOGE(TAG, "Timeout while receiving from MCU, dropping message '%s'", reinterpret_cast<char *>(rx_message_));
     rx_count_ = 0;
   }
 
@@ -106,15 +106,15 @@ void Miot::loop() {
 
     if (c == '\r') {
       rx_message_[rx_count_] = 0;
-      ESP_LOGV(TAG, "Received MCU message '%s'", rx_message_);
-      process_message_(rx_message_);
+      ESP_LOGV(TAG, "Received MCU message '%s'", reinterpret_cast<char *>(rx_message_));
+      process_message_(reinterpret_cast<char *>(rx_message_));
       rx_count_ = 0;
       break;
     }
 
     if (rx_count_ >= MAX_LINE_LENGTH) {
       rx_message_[rx_count_] = 0;
-      ESP_LOGE(TAG, "MCU message too long, dropping message '%s'", rx_message_);
+      ESP_LOGE(TAG, "MCU message too long, dropping message '%s'", reinterpret_cast<char *>(rx_message_));
       rx_count_ = 0;
     }
 

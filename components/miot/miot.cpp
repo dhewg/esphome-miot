@@ -410,6 +410,9 @@ void Miot::process_message_(char *msg) {
     if (!mcu_version_.empty())
       ESP_LOGI(TAG, "MCU Version: %s", mcu_version_.c_str());
     send_reply_("ok");
+  } else if (cmd == "ble_config") {
+    ESP_LOGI(TAG, "Ignoring BLE config...");
+    send_reply_("ok");
   } else if (cmd == "error") {
     const char *error = strtok_r(nullptr, "\"", &saveptr);
     const char *code = nullptr;
@@ -421,12 +424,15 @@ void Miot::process_message_(char *msg) {
     ESP_LOGI(TAG, "Resetting to factory defaults...");
     global_preferences->reset();
     App.safe_reboot();
+  } else if (cmd == "reboot") {
+    ESP_LOGI(TAG, "MCU requested reboot...");
+    App.safe_reboot();
   } else {
     if (saveptr)
       ESP_LOGW(TAG, "Unknown command '%s %s'", cmd.c_str(), saveptr);
     else
       ESP_LOGW(TAG, "Unknown command '%s'", cmd.c_str());
-    send_reply_("ok");
+    send_reply_("error");
   }
 }
 

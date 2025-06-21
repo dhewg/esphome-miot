@@ -428,6 +428,7 @@ void Miot::process_message_(char *msg) {
     send_reply_("ok");
   } else if (cmd == "restore") {
     ESP_LOGI(TAG, "Resetting to factory defaults...");
+    send_reply_("ok");
     global_preferences->reset();
     App.safe_reboot();
   } else {

@@ -422,10 +422,12 @@ void Miot::process_message_(char *msg) {
     send_reply_("ok");
   } else if (cmd == "restore") {
     ESP_LOGI(TAG, "Resetting to factory defaults...");
+    send_reply_("ok");
     global_preferences->reset();
     App.safe_reboot();
   } else if (cmd == "reboot") {
     ESP_LOGI(TAG, "MCU requested reboot...");
+    send_reply_("ok");
     App.safe_reboot();
   } else {
     if (saveptr)

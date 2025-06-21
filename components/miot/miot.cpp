@@ -39,7 +39,7 @@ static const char *const NET_UNPROV = "unprov";
 static const char *const NET_UAP = "uap";
 static const char *const NET_LOCAL = "local";
 static const char *const NET_CLOUD = "cloud";
-static const int MAX_COMMAND_LENGTH = 60;
+static const size_t MAX_COMMAND_LENGTH = 60;
 
 void Miot::setup() {
   queue_command("MIIO_mcu_version_req");

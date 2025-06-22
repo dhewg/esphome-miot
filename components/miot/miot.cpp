@@ -413,6 +413,9 @@ void Miot::process_message_(char *msg) {
   } else if (cmd == "ble_config") {
     ESP_LOGI(TAG, "Ignoring BLE config...");
     send_reply_("ok");
+  } else if (cmd == "set_mcu_auto_ota") {
+    ESP_LOGI(TAG, "Ignoring MCU auto-OTA config...");
+    send_reply_("ok");
   } else if (cmd == "error") {
     const char *error = strtok_r(nullptr, "\"", &saveptr);
     const char *code = nullptr;

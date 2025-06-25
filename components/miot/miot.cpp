@@ -429,9 +429,8 @@ void Miot::process_message_(char *msg) {
     global_preferences->reset();
     App.safe_reboot();
   } else if (cmd == "reboot") {
-    ESP_LOGI(TAG, "MCU requested reboot...");
+    ESP_LOGI(TAG, "Ignoring MCU requested reboot...");
     send_reply_("ok");
-    App.safe_reboot();
   } else {
     if (saveptr)
       ESP_LOGW(TAG, "Unknown command '%s %s'", cmd.c_str(), saveptr);

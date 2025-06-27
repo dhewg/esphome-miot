@@ -39,7 +39,8 @@ static const char *const NET_UNPROV = "unprov";
 static const char *const NET_UAP = "uap";
 static const char *const NET_LOCAL = "local";
 static const char *const NET_CLOUD = "cloud";
-static const int MAX_COMMAND_LENGTH = 60;
+static const size_t MAX_COMMAND_LENGTH = 60;
+static const size_t MAX_MCU_LOG_LENGTH = 32;
 
 void Miot::setup() {
   // discard initial incoming serial buffer
@@ -50,7 +51,7 @@ void Miot::setup() {
         rx_message_[rx_count_++] = c;
 
   if (rx_count_ > 0) {
-    ESP_LOGW(TAG, "Discarding initial MCU data: %s", format_hex_pretty(rx_message_, rx_count_));
+    mcu_log("Discarding initial MCU data: %s", format_hex_pretty(rx_message_, rx_count_).c_str());
     rx_count_ = 0;
   }
 
@@ -157,6 +158,11 @@ void Miot::dump_config() {
 #else
   ESP_LOGCONFIG(TAG, "  Time: UNAVAILABLE");
 #endif
+  if (!mcu_log_.empty()) {
+    ESP_LOGCONFIG(TAG, "  MCU Log:");
+    for (auto it = mcu_log_.cbegin(); it != mcu_log_.cend(); ++it)
+      ESP_LOGCONFIG(TAG, "    %s", (*it).c_str());
+  }
 }
 
 void Miot::register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueType type, const std::function<void(const MiotValue &value)> &func) {
@@ -366,6 +372,25 @@ std::string Miot::get_time_reply_(bool posix) {
 #endif
 }
 
+void Miot::mcu_log(const char *fmt, ...) {
+  std::string log;
+  va_list args;
+
+  log.resize(MAX_LINE_LENGTH);
+  va_start(args, fmt);
+  size_t len = vsnprintf(&log[0], MAX_LINE_LENGTH + 1, fmt, args);
+  va_end(args);
+  log.resize(len);
+
+  if (std::find(mcu_log_.cbegin(), mcu_log_.cend(), log) == mcu_log_.cend()) {
+    if (mcu_log_.size() >= MAX_MCU_LOG_LENGTH)
+      mcu_log_.pop_front();
+    mcu_log_.push_back(log);
+  }
+
+  ESP_LOGW(TAG, "%s", log.c_str());
+}
+
 void Miot::process_message_(char *msg) {
   char *saveptr = nullptr;
   const StringRef cmd(strtok_r(msg, " ", &saveptr));
@@ -433,9 +458,9 @@ void Miot::process_message_(char *msg) {
     send_reply_("ok");
   } else {
     if (saveptr)
-      ESP_LOGW(TAG, "Unknown command '%s %s'", cmd.c_str(), saveptr);
+      mcu_log("Unknown command '%s %s'", cmd.c_str(), saveptr);
     else
-      ESP_LOGW(TAG, "Unknown command '%s'", cmd.c_str());
+      mcu_log("Unknown command '%s'", cmd.c_str());
     send_reply_("error");
   }
 }

@@ -82,7 +82,7 @@ logger:
 
 api:
   encryption:
-    key: !secret feeder_api_key
+    key: !secret api_encryption_key
   reboot_timeout: 0s
   on_client_connected:
     then:
@@ -151,14 +151,14 @@ api:
 
 ota:
   - platform: esphome
-    password: !secret feeder_ota_password
+    password: !secret ota_password
 
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
   ap:
     ssid: "Pet-Feeder Fallback Hotspot"
-    password: !secret feeder_ap_password
+    password: !secret wifi_ap_password
 
 captive_portal:
     

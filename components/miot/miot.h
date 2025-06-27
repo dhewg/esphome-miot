@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <deque>
 #include <map>
 #include <queue>
 #include <utility>
@@ -83,6 +84,7 @@ class Miot : public Component, public uart::UARTDevice {
   void send_reply_(const char *reply);
   void update_property(uint32_t siid, uint32_t piid, const char *value);
   void update_properties(char **saveptr, MiotResultFormat format);
+  void mcu_log(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
   void process_message_(char *msg);
   void process_event_(uint32_t siid, uint32_t eiid);
 
@@ -94,6 +96,7 @@ class Miot : public Component, public uart::UARTDevice {
   const char *last_net_reply_{nullptr};
   std::string model_;
   std::string mcu_version_;
+  std::deque<std::string> mcu_log_;
   std::queue<std::string> command_queue_;
   bool expect_action_result_{false};
   uint32_t heartbeat_siid_{0};

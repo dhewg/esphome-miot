@@ -372,7 +372,7 @@ void Miot::mcu_log(const char *fmt, ...) {
     mcu_log_.push_back(log);
   }
 
-  ESP_LOGW(TAG, log.c_str());
+  ESP_LOGW(TAG, "%s", log.c_str());
 }
 
 void Miot::process_message_(char *msg) {

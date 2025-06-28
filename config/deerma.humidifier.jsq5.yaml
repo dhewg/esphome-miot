@@ -1,0 +1,155 @@
+# https://home.miot-spec.com/spec/deerma.humidifier.jsq5
+
+external_components:
+  source: github://dhewg/esphome-miot@main
+
+esphome:
+  name: "mi-smart-humidifier"
+  friendly_name: "Mi Smart Antibacterial Humidifier"
+  comment: "Mi Smart Antibacterial Humidifier (deerma.humidifier.jsq5)"
+  project:
+    name: "dhewg.esphome-miot"
+    version: "deerma.humidifier.jsq5"
+
+esp8266:
+  board: esp_wroom_02
+
+logger:
+  level: DEBUG
+  hardware_uart: UART1
+  # Important: Disable UART1 logging to avoid hardware errors on main UART0
+  baud_rate: 0
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+  reboot_timeout: 0s
+  services:
+    - service: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: 'id(miot_main).queue_command(command);'
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    password: !secret wifi_ap_password
+
+captive_portal:
+
+uart:
+  tx_pin: GPIO15
+  rx_pin: GPIO13
+  baud_rate: 115200
+
+miot:
+  id: miot_main
+
+text_sensor:
+  - platform: "miot"
+    name: "Device Fault"
+    miot_siid: 2
+    miot_piid: 2
+    filters:
+      map:
+        - 0 -> No Faults
+        - 1 -> Insufficient Water
+        - 2 -> Water Separation
+    icon: "mdi:alert-circle-outline"
+    entity_category: "diagnostic"
+
+sensor:
+  - platform: "miot"
+    name: "Relative Humidity"
+    miot_siid: 3
+    miot_piid: 1
+    icon: "mdi:water-percent"
+    unit_of_measurement: "%"
+    device_class: "humidity"
+    state_class: "measurement"
+    accuracy_decimals: 1
+  - platform: "miot"
+    name: "Temperature"
+    miot_siid: 3
+    miot_piid: 7
+    icon: "mdi:thermometer"
+    unit_of_measurement: "°C"
+    device_class: "temperature"
+    state_class: "measurement"
+    accuracy_decimals: 1
+
+switch:
+  - platform: "miot"
+    name: "Humidifier"
+    miot_siid: 2
+    miot_piid: 1
+    icon: "mdi:air-humidifier"
+  - platform: "miot"
+    name: "Indicator Lights"
+    miot_siid: 6
+    miot_piid: 1
+    icon: "mdi:lightbulb"
+    entity_category: "config"
+  - platform: "miot"
+    name: "Notification Sounds"
+    miot_siid: 5
+    miot_piid: 1
+    icon: "mdi:volume-high"
+    entity_category: "config"
+
+select:
+  - platform: "miot"
+    name: "Fan Level"
+    miot_siid: 2
+    miot_piid: 5
+    options:
+      "1": "Low"
+      "2": "Medium"
+      "3": "High"
+      "4": "Humidity"
+    icon: "mdi:fan-chevron-up"
+
+number:
+  - platform: "miot"
+    name: "Target Humidity"
+    miot_siid: 2
+    miot_piid: 6
+    min_value: 40
+    max_value: 80
+    step: 1
+    icon: "mdi:water-plus-outline"
+    unit_of_measurement: "%"
+
+binary_sensor:
+  - platform: "miot"
+    name: "Water shortage fault"
+    miot_siid: 7
+    miot_piid: 1
+    miot_poll: false
+    icon: "mdi:water-alert-outline"
+    entity_category: "diagnostic"
+  - platform: "miot"
+    name: "Water tank filled"
+    miot_siid: 7
+    miot_piid: 2
+    miot_poll: false
+    icon: "mdi:water-check"
+    entity_category: "diagnostic"
+
+event:
+  - platform: "miot"
+    name: "Lack of water"
+    event_type: "lack_of_water"
+    miot_siid: 7
+    miot_eiid: 1
+  - platform: "miot"
+    name: "Bring water tank"
+    event_type: "bring_water_tank"
+    miot_siid: 7
+    miot_eiid: 2

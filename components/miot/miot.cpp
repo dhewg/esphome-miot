@@ -456,6 +456,9 @@ void Miot::process_message_() {
     send_reply_("ok");
     global_preferences->reset();
     App.safe_reboot();
+  } else if (std::strncmp(cmd.c_str(), "***", 3) == 0) {
+    ESP_LOGI(TAG, "Ignoring MCU debug message '%s %s'", cmd.c_str(), saveptr);
+    send_reply_("error");
   } else {
     mcu_log("Unknown command '%s'", get_printable_rx_message().c_str());
     send_reply_("ok");

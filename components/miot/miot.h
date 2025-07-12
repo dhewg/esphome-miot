@@ -61,6 +61,9 @@ class Miot : public Component, public uart::UARTDevice {
   void loop() override;
   void dump_config() override;
 
+  std::string get_printable_string(const uint8_t *data, size_t len);
+  std::string get_printable_string(const std::string &str);
+
   void set_heartbeat_config(uint32_t siid, uint32_t piid) {
     this->heartbeat_siid_ = siid;
     this->heartbeat_piid_ = piid;

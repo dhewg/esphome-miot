@@ -165,6 +165,22 @@ void Miot::dump_config() {
   }
 }
 
+std::string Miot::get_printable_string(const uint8_t *data, size_t len) {
+  std::string s;
+  s.reserve(len);
+
+  for (size_t i = 0; i < len; ++i)
+    if (std::isprint(data[i]))
+      s += data[i];
+    else
+      s += str_snprintf("\\x%02X", 4, data[i]);
+  return s;
+}
+
+std::string Miot::get_printable_string(const std::string &str) {
+  return get_printable_string(reinterpret_cast<const uint8_t *>(str.c_str()), str.size());
+}
+
 void Miot::register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueType type, const std::function<void(const MiotValue &value)> &func) {
   if (listeners_.find(std::make_pair(siid, piid)) != listeners_.end()) {
     ESP_LOGE(TAG, "Property already has a listener: %" PRIu32 " %" PRIu32, siid, piid);

@@ -456,6 +456,11 @@ void Miot::process_message_() {
     send_reply_("ok");
     global_preferences->reset();
     App.safe_reboot();
+  } else if (cmd.size() < 3 || !std::islower(cmd[0]) || !std::islower(cmd[1]) || !std::islower(cmd[2])) {
+    // required for deerma.humidifier.jsq5 and other devices with picky MCUs
+    // that enforce MIoT spec compliance, and print e.g. debug info over UART.
+    mcu_log("Invalid command '%s'", get_printable_rx_message().c_str());
+    send_reply_("error");
   } else {
     mcu_log("Unknown command '%s'", get_printable_rx_message().c_str());
     send_reply_("ok");

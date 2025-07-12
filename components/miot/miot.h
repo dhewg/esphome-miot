@@ -61,6 +61,9 @@ class Miot : public Component, public uart::UARTDevice {
   void loop() override;
   void dump_config() override;
 
+  std::string get_printable_string(const uint8_t *data, size_t len);
+  std::string get_printable_string(const std::string &str);
+
   void set_heartbeat_config(uint32_t siid, uint32_t piid) {
     this->heartbeat_siid_ = siid;
     this->heartbeat_piid_ = piid;
@@ -85,8 +88,12 @@ class Miot : public Component, public uart::UARTDevice {
   void update_property(uint32_t siid, uint32_t piid, const char *value);
   void update_properties(char **saveptr, MiotResultFormat format);
   void mcu_log(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
-  void process_message_(char *msg);
+  void process_message_();
   void process_event_(uint32_t siid, uint32_t eiid);
+
+  std::string get_printable_rx_message() {
+    return get_printable_string(rx_message_, rx_count_);
+  }
 
   static const size_t MAX_LINE_LENGTH = 512;
 

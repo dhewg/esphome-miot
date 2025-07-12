@@ -9,7 +9,7 @@ static const char *const TAG = "miot.text_sensor";
 void MiotTextSensor::setup() {
   this->parent_->register_listener(this->siid_, this->piid_, this->poll_, mvtString, [this](const MiotValue &value) {
     ESP_LOGV(TAG, "MCU reported text sensor %" PRIu32 ":%" PRIu32 " is: %s", this->siid_, this->piid_, value.as_string.c_str());
-    this->publish_state(value.as_string);
+    this->publish_state(this->parent_->get_printable_string(value.as_string));
   });
 }
 

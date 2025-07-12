@@ -51,7 +51,7 @@ void Miot::setup() {
         rx_message_[rx_count_++] = c;
 
   if (rx_count_ > 0) {
-    mcu_log("Discarding initial MCU data: %s", format_hex_pretty(rx_message_, rx_count_).c_str());
+    mcu_log("Discarding initial MCU data: %s", get_printable_rx_message().c_str());
     rx_count_ = 0;
   }
 
@@ -111,8 +111,7 @@ void Miot::loop() {
   uint8_t c;
 
   if (rx_count_ > 0 && millis() - last_rx_char_timestamp_ > RECEIVE_TIMEOUT) {
-    rx_message_[rx_count_] = 0;
-    ESP_LOGE(TAG, "Timeout while receiving from MCU, dropping message '%s'", reinterpret_cast<char *>(rx_message_));
+    ESP_LOGE(TAG, "Timeout while receiving from MCU, dropping message '%s'", get_printable_rx_message().c_str());
     rx_count_ = 0;
   }
 
@@ -121,23 +120,16 @@ void Miot::loop() {
       break;
 
     if (c == '\r') {
-      rx_message_[rx_count_] = 0;
-      ESP_LOGV(TAG, "Received MCU message '%s'", reinterpret_cast<char *>(rx_message_));
-      process_message_(reinterpret_cast<char *>(rx_message_));
+      ESP_LOGV(TAG, "Received MCU message '%s'", get_printable_rx_message().c_str());
+      process_message_();
       rx_count_ = 0;
       break;
     }
 
     if (rx_count_ >= MAX_LINE_LENGTH) {
-      rx_message_[rx_count_] = 0;
-      ESP_LOGE(TAG, "MCU message too long, dropping message '%s'", reinterpret_cast<char *>(rx_message_));
+      ESP_LOGE(TAG, "MCU message too long, dropping '%s'", get_printable_rx_message().c_str());
       rx_count_ = 0;
     }
-
-    // replace unprintable chars, which is a violation of the spec
-    // seen: 0xff for missing serial numbers
-    if (c < 32 || c > 127)
-      c = '?';
 
     rx_message_[rx_count_++] = c;
     last_rx_char_timestamp_ = millis();
@@ -407,9 +399,10 @@ void Miot::mcu_log(const char *fmt, ...) {
   ESP_LOGW(TAG, "%s", log.c_str());
 }
 
-void Miot::process_message_(char *msg) {
+void Miot::process_message_() {
+  rx_message_[rx_count_] = 0;
   char *saveptr = nullptr;
-  const StringRef cmd(strtok_r(msg, " ", &saveptr));
+  const StringRef cmd(strtok_r(reinterpret_cast<char *>(rx_message_), " ", &saveptr));
 
   queue_net_change_command(false);
 
@@ -464,10 +457,7 @@ void Miot::process_message_(char *msg) {
     global_preferences->reset();
     App.safe_reboot();
   } else {
-    if (saveptr)
-      mcu_log("Unknown command '%s %s'", cmd.c_str(), saveptr);
-    else
-      mcu_log("Unknown command '%s'", cmd.c_str());
+    mcu_log("Unknown command '%s'", get_printable_rx_message().c_str());
     send_reply_("ok");
   }
 }

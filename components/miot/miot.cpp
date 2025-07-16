@@ -26,7 +26,7 @@
  * TODO
  * add "access" to components? read/write/notify
  * automations?
- * reboot mcu on ota reboot
+ * ~~reboot mcu on ota reboot~~ Not possible.
  */
 
 namespace esphome {
@@ -457,10 +457,14 @@ void Miot::process_message_() {
     global_preferences->reset();
     App.safe_reboot();
   } else if (std::strncmp(cmd.c_str(), "***", 3) == 0) {
-    ESP_LOGI(TAG, "Ignoring MCU debug message '%s %s'", cmd.c_str(), saveptr);
+    // Required for deerma.humidifier.jsq5 and other devices with picky MCUs
+    // that enforce MIoT spec compliance, and print e.g. debug info over UART.
+    mcu_log("Invalid upstream data '%s'", get_printable_rx_message().c_str());
     send_reply_("error");
   } else {
     mcu_log("Unknown command '%s'", get_printable_rx_message().c_str());
+    // Technically, 'error' would be the correct default reply according to MIoT spec,
+    // but we are keeping 'ok' for now. Otherwise, an additional (~5) downstream commands need to be implemented.
     send_reply_("ok");
   }
 }

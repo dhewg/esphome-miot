@@ -449,7 +449,7 @@ void Miot::process_message_() {
     const char *code = nullptr;
     if (error)
       code = strtok_r(nullptr, " ", &saveptr);
-    ESP_LOGE(TAG, "MCU command error %s: %s", code, error);
+    ESP_LOGE(TAG, "MCU command error %s: %s", code ? code : "", error ? error : "");
     send_reply_("ok");
   } else if (cmd == "restore") {
     ESP_LOGI(TAG, "Resetting to factory defaults...");

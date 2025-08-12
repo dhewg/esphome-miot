@@ -13,7 +13,7 @@ esphome:
     version: "xiaomi.fan.p45"
 
 esp32:
-  board: seeed_xiao_esp32c3
+  board: esp32-c3-devkitm-1
   framework:
     type: esp-idf
     sdkconfig_options:

@@ -1,0 +1,357 @@
+# https://home.miot-spec.com/spec/zhimi.airp.meb1
+# https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-meb1:1
+
+external_components:
+  source: github://dhewg/esphome-miot@main
+
+esphome:
+  name: "purifier"
+  friendly_name: Xiaomi Smart Air Purifier Elite
+  comment: Xiaomi Smart Air Purifier Elite (zhimi.airp.meb1)
+  project:
+    name: dhewg.esphome-miot
+    version: zhimi.airp.meb1
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_custom_mac: true
+      ignore_efuse_mac_crc: true
+
+logger:
+  level: DEBUG
+
+api:
+  encryption:
+    key: !secret api_encryption_key
+  actions:
+    - action: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: id(miot_main).queue_command(command);
+    - action: reset_filter_life
+      variables:
+        filter_used_time: string
+      then:
+        script.execute:
+          id: reset_filter_life
+          filter_used_time: !lambda return filter_used_time;
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    password: !secret wifi_ap_password
+
+captive_portal:
+    
+
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 115200
+
+time:
+  - platform: homeassistant
+    on_time:
+      - seconds: /1
+        then:
+          - lambda: id(miot_main).queue_command("get_properties 9 1");
+
+miot:
+  id: miot_main
+  miot_heartbeat_siid: 11
+  miot_heartbeat_piid: 4
+
+fan:
+  - platform: "miot"
+    name: "Fan"
+    state:
+      miot_siid: 2
+      miot_piid: 1
+    speed:
+      miot_siid: 2
+      miot_piid: 5
+      min_value: 1
+      max_value: 3
+    preset_modes:
+      miot_siid: 2
+      miot_piid: 4
+      options:
+        0: "Auto"
+        1: "Sleep"
+        2: "Favorite"
+        3: ""
+
+text_sensor:
+  - platform: miot
+    name: "Serial Number"
+    miot_siid: 1
+    miot_piid: 5
+    miot_poll: False
+  - platform: miot
+    miot_siid: 2
+    miot_piid: 2
+    name: "Device Fault"
+    icon: mdi:fan-alert
+    entity_category: diagnostic
+    filters:
+      - map:
+        - 0 -> No Faults
+        - 1 -> PM Sensor Error
+        - 2 -> TempHum Error
+        - 4 -> No Filter
+  - platform: miot
+    miot_siid: 3
+    miot_piid: 9
+    id: air_quality
+    name: "Air Quality"
+    filters:
+      map:
+        - 0 -> Excellent
+        - 1 -> Good
+        - 2 -> Moderate
+        - 3 -> Poor
+        - 4 -> Heavy Pollution
+        - 5 -> Hazardous
+  - platform: miot
+    miot_siid: 9
+    miot_piid: 8
+    name: "Reboot Cause"
+    entity_category: diagnostic
+    disabled_by_default: True
+    filters:
+      map:
+        - 0 -> REASON-HW-BOOT
+        - 1 -> REASON-USER-REBOOT
+        - 2 -> REASON-UPDATE
+        - 3 -> REASON-WDT
+  - platform: miot
+    miot_siid: 12
+    miot_piid: 1
+    name: "Filter Tag SN"
+    entity_category: diagnostic
+    disabled_by_default: True
+  - platform: miot
+    miot_siid: 12
+    miot_piid: 2
+    name: "Filter Factory ID"
+    entity_category: diagnostic
+    disabled_by_default: True
+  - platform: miot
+    miot_siid: 12
+    miot_piid: 3
+    name: "Filter Product ID"
+    entity_category: diagnostic
+    disabled_by_default: True
+  - platform: miot
+    miot_siid: 12
+    miot_piid: 4
+    name: "Filter Production Time"
+    entity_category: diagnostic
+    disabled_by_default: True
+  - platform: miot
+    miot_siid: 12
+    miot_piid: 5
+    name: "Filter Serial Number"
+    entity_category: diagnostic
+  - platform: miot
+    miot_siid: 9
+    miot_piid: 12
+    name: "Favorite Square"
+    entity_category: diagnostic
+    disabled_by_default: True
+
+sensor:
+  - platform: miot
+    miot_siid: 3
+    miot_piid: 1
+    name: "Humidity"
+    unit_of_measurement: "%"
+    device_class: humidity
+    state_class: measurement
+  - platform: miot
+    miot_siid: 3
+    miot_piid: 4
+    name: "PM2.5 Density"
+    unit_of_measurement: "µg/m³"
+    device_class: pm25
+    state_class: measurement
+  - platform: miot
+    miot_siid: 3
+    miot_piid: 7
+    name: "Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+  - platform: miot
+    miot_siid: 3
+    miot_piid: 8
+    name: "PM10 Density"
+    unit_of_measurement: "µg/m³"
+    device_class: pm10
+    state_class: measurement
+  - platform: miot
+    miot_siid: 4
+    miot_piid: 1
+    name: "Filter Life Level"
+    unit_of_measurement: "%"
+    icon: mdi:air-filter
+  - platform: miot
+    miot_siid: 4
+    miot_piid: 3
+    name: "Filter Used Time"
+    entity_category: diagnostic
+    unit_of_measurement: "h"
+    icon: mdi:air-filter
+  - platform: miot
+    miot_siid: 9
+    miot_piid: 1
+    id: motor_speed
+    name: "Motor Speed"
+    unit_of_measurement: "rpm"
+    icon: mdi:fan
+  - platform: miot
+    miot_siid: 9
+    miot_piid: 10
+    name: "I²C Error Count"
+    state_class: measurement
+    entity_category: diagnostic
+  - platform: template
+    name: "Active power"
+    id: active_power
+    state_class: measurement
+    device_class: power
+    unit_of_measurement: W
+    icon: mdi:flash
+    accuracy_decimals: 2
+    update_interval: 1s
+    lambda: !lambda |-
+      float r   = id(motor_speed).state * 0.001f;
+      float fan = ((18.917f * r - 24.211f) * r + 20.097f) * r - 3.404f;
+
+      float ion = id(ionizer).state ? 0.4f : 0.0f;
+      float uv  = id(uv_light).state ? 0.6f : 0.0f;
+
+      return fan + ion + uv;
+  - platform: integration
+    name: "Energy"
+    sensor: active_power
+    icon: mdi:flash
+    time_unit: h
+    unit_of_measurement: 'kWh'
+    state_class: total_increasing
+    device_class: energy
+    accuracy_decimals: 3
+    filters:
+      - multiply: 0.001
+
+switch:
+  - platform: miot
+    miot_siid: 2
+    miot_piid: 6
+    id: ionizer
+    name: "Ionizer"
+    icon: mdi:molecule
+    entity_category: config
+  - platform: miot
+    miot_siid: 2
+    miot_piid: 7
+    id: uv_light
+    name: "UV Light"
+    icon: "mdi:lightbulb-cfl-spiral"
+    entity_category: config
+  - platform: miot
+    miot_siid: 6
+    miot_piid: 1
+    name: "Notification Sounds"
+    icon: mdi:volume-high
+    entity_category: config
+  - platform: miot
+    miot_siid: 8
+    miot_piid: 1
+    name: "Child Lock"
+    icon: mdi:lock
+    entity_category: config
+
+select:
+  - platform: miot
+    miot_siid: 13
+    miot_piid: 2
+    name: "Display Brightness"
+    icon: mdi:brightness-6
+    entity_category: config
+    options:
+      0: "Off"
+      1: "Low"
+      2: "High"
+  - platform: miot
+    miot_siid: 15
+    miot_piid: 1
+    name: "Temperature Display Unit"
+    icon: mdi:temperature-celsius
+    entity_category: config
+    options:
+      1: "Celsius"
+      2: "Fahrenheit"
+
+button:
+  - platform: miot
+    name: "Toggle Power"
+    miot_siid: 2
+    miot_aiid: 1
+  - platform: miot
+    name: "Toggle Mode"
+    miot_siid: 9
+    miot_aiid: 1
+  - platform: miot
+    name: "Toggle Fan Level"
+    miot_siid: 9
+    miot_aiid: 2
+
+number:
+  - platform: miot
+    miot_siid: 14
+    miot_piid: 1
+    name: "Favorite Speed"
+    icon: mdi:speedometer
+    min_value: 0
+    max_value: 14
+    step: 1
+
+script:
+  - id: reset_filter_life
+    parameters:
+      filter_used_time: string
+    then:
+      lambda: id(miot_main).queue_command("4 1 3 %s", filter_used_time);
+
+event:
+  - platform: miot
+    name: "Motor Stuck"
+    event_type: fault_motor_stuck
+    miot_siid: 9
+    miot_eiid: 1
+  - platform: miot
+    name: "Child Lock Triggered"
+    event_type: childlock_trigger
+    miot_siid: 9
+    miot_eiid: 2
+  - platform: miot
+    name: "Top Grille Removed"
+    event_type: top_grille
+    miot_siid: 9
+    miot_eiid: 4
+  - platform: miot
+    name: "Filter Exhausted"
+    event_type: filter_exhausted
+    miot_siid: 9
+    miot_eiid: 5

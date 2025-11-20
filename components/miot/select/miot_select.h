@@ -20,7 +20,7 @@ class MiotSelect : public select::Select, public Component {
     this->piid_ = piid;
     this->poll_ = poll;
   }
-  void set_select_mappings(std::vector<uint8_t> mappings) { this->mappings_ = std::move(mappings); }
+  void set_select_mappings(const std::vector<uint8_t> &mappings) { this->mappings_ = std::move(mappings); }
 
  protected:
   void control(const std::string &value) override;

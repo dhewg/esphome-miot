@@ -30,7 +30,7 @@ logger:
 
 api:
   encryption:
-    key: "XXX"
+    key: !secret api_encryption_key
   reboot_timeout: 0s
   services:
     - service: mcu_command
@@ -41,7 +41,7 @@ api:
 
 ota:
   - platform: esphome
-    password: "XXX"
+    password: !secret ota_password
 
 wifi:
   ssid: !secret wifi_ssid
@@ -49,7 +49,7 @@ wifi:
 
   ap:
     ssid: "Purifierproh Fallback Hotspot"
-    password: "XXX"
+    password: !secret wifi_ap_password
 
 captive_portal:
 

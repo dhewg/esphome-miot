@@ -35,8 +35,8 @@ class MiotFan : public Component, public fan::Fan {
     this->preset_modes_siid_ = siid;
     this->preset_modes_piid_ = piid;
   }
-  void set_preset_mode(uint8_t key, const std::string &value) {
-    if (value.empty())
+  void set_preset_mode_name(uint8_t key, const char *value) {
+    if (value == nullptr || strlen(value) == 0)
       manual_speed_preset_ = key;
     else
       this->preset_modes_[key] = value;
@@ -59,7 +59,7 @@ class MiotFan : public Component, public fan::Fan {
   uint32_t direction_piid_{0};
   uint32_t preset_modes_siid_{0};
   uint32_t preset_modes_piid_{0};
-  std::map<uint8_t, std::string> preset_modes_;
+  std::map<uint8_t, const char *> preset_modes_;
   optional<uint8_t> manual_speed_preset_;
 };
 

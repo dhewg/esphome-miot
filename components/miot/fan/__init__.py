@@ -99,4 +99,4 @@ async def to_code(config):
         cg.add(var.set_preset_modes_config(preset_modes[CONF_MIOT_SIID], preset_modes[CONF_MIOT_PIID]))
         options_map = preset_modes[CONF_OPTIONS]
         for k in options_map:
-            cg.add(var.set_preset_mode(k, options_map[k]))
+            cg.add(var.set_preset_mode_name(k, options_map[k]))

@@ -58,7 +58,7 @@ void MiotFan::setup() {
         ESP_LOGE(TAG, "Unknown preset mode value %" PRIu32 "", value.as_uint);
         return;
       }
-      this->set_preset_mode_name(it->first, it->second);
+      this->set_preset_mode_name(it->first, it->second.c_str());
       this->speed = 0;
     }
     this->publish_state();

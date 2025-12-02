@@ -11,19 +11,6 @@ namespace miot {
 
 static const char *const TAG = "miot.fan";
 
-// preset modes are implemented as described here: https://developers.home-assistant.io/docs/core/entity/fan/#preset-modes
-// -> setting a speed percentage unsets the preset
-// -> setting a preset sets the speed percentage to zero
-// -> mcu speed values are not reported if the device is off or in preset mode
-
-// all properties are currently always polled
-// "state" and "oscillating" are currently true booleans ("true" and "false" on the wire)
-// "direction" is a true boolean as well, where "true" means REVERSE
-// "speed" values are 0=off [1:]=(max-min)/step
-// an empty preset mode string declares the corresponding value as "manual mode", which is set before setting a manual speed
-
-// TODO what about "restore_mode", untested, does it require anything here?
-
 void MiotFan::setup() {
   this->parent_->register_listener(this->state_siid_, this->state_piid_, true, mvtString, [this](const MiotValue &value) {
     this->state = value.as_string == "true";
@@ -37,7 +24,7 @@ void MiotFan::setup() {
         ESP_LOGW(TAG, "Ignoring MCU reported speed, fan is off");
       return;
     }
-    if (this->has_preset_mode()) {
+    if (!this->preset_mode.empty()) {
       ESP_LOGW(TAG, "Ignoring MCU reported speed, in preset mode");
       return;
     }
@@ -64,14 +51,14 @@ void MiotFan::setup() {
     this->parent_->register_listener(this->preset_modes_siid_, this->preset_modes_piid_, true, mvtUInt, [this](const MiotValue &value) {
       ESP_LOGV(TAG, "MCU reported preset mode %" PRIu32 ":%" PRIu32 " is: %" PRIu32, this->preset_modes_siid_, this->preset_modes_piid_, value.as_uint);
       if (this->manual_speed_preset_.has_value() && value.as_uint == *this->manual_speed_preset_) {
-        this->clear_preset_mode_();
+        this->preset_mode.clear();
       } else {
         auto it = preset_modes_.find(value.as_uint);
         if (it == preset_modes_.end()) {
           ESP_LOGE(TAG, "Unknown preset mode value %" PRIu32 "", value.as_uint);
           return;
         }
-        this->set_preset_mode_(it->second);
+        this->set_preset_mode_name(it->second);
         this->speed = 0;
       }
       this->publish_state();
@@ -110,9 +97,10 @@ fan::FanTraits MiotFan::get_traits() {
                         this->direction_siid_ != 0 && this->direction_piid_ != 0,
                         (this->speed_max_ - this->speed_min_) / this->speed_step_ + 1);
 
-  std::vector<const char *> modes;
+  std::set<std::string> modes;
   for (auto const &iter : preset_modes_)
-    modes.push_back(iter.second);
+    modes.insert(iter.second);
+
   traits.set_supported_preset_modes(modes);
 
   return traits;
@@ -121,12 +109,12 @@ fan::FanTraits MiotFan::get_traits() {
 void MiotFan::control(const fan::FanCall &call) {
   optional<uint8_t> mode;
 
-  const char *mode_from = this->get_preset_mode();
-  const char *mode_to = call.get_preset_mode();
+  std::string mode_from = this->preset_mode;
+  std::string mode_to = call.get_preset_mode();
 
   if (this->preset_modes_siid_ != 0 && this->preset_modes_piid_ != 0 &&
-      mode_to != nullptr && strlen(mode_to) > 0 &&
-      (mode_from == nullptr || strcmp(mode_from, mode_to) != 0)) {
+      !mode_to.empty() &&
+      (mode_from != mode_to)) {
     auto it = std::find_if(preset_modes_.cbegin(),
                            preset_modes_.cend(),
                            [mode_to](auto && pair) {
@@ -140,7 +128,7 @@ void MiotFan::control(const fan::FanCall &call) {
     this->speed = 0;
     this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*mode));
   } else if (call.get_speed().has_value()) {
-    this->clear_preset_mode_();
+    this->preset_mode.clear();
     if (this->manual_speed_preset_.has_value())
       this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*this->manual_speed_preset_));
     this->parent_->set_property(this->speed_siid_, this->speed_piid_, MiotValue(this->speed_min_ + *call.get_speed() * this->speed_step_ - 1));

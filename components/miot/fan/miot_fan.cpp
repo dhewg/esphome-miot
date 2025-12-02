@@ -49,20 +49,20 @@ void MiotFan::setup() {
 
   if (this->preset_modes_siid_ != 0 && this->preset_modes_piid_ != 0)
     this->parent_->register_listener(this->preset_modes_siid_, this->preset_modes_piid_, true, mvtUInt, [this](const MiotValue &value) {
-      ESP_LOGV(TAG, "MCU reported preset mode %" PRIu32 ":%" PRIu32 " is: %" PRIu32, this->preset_modes_siid_, this->preset_modes_piid_, value.as_uint);
-      if (this->manual_speed_preset_.has_value() && value.as_uint == *this->manual_speed_preset_) {
-        this->preset_mode.clear();
-      } else {
-        auto it = preset_modes_.find(value.as_uint);
-        if (it == preset_modes_.end()) {
-          ESP_LOGE(TAG, "Unknown preset mode value %" PRIu32 "", value.as_uint);
-          return;
-        }
-        this->set_preset_mode_name(it->second);
-        this->speed = 0;
+    ESP_LOGV(TAG, "MCU reported preset mode %" PRIu32 ":%" PRIu32 " is: %" PRIu32, this->preset_modes_siid_, this->preset_modes_piid_, value.as_uint);
+    if (this->manual_speed_preset_.has_value() && value.as_uint == *this->manual_speed_preset_) {
+      this->preset_mode.clear();
+    } else {
+      auto it = preset_modes_.find(value.as_uint);
+      if (it == preset_modes_.end()) {
+        ESP_LOGE(TAG, "Unknown preset mode value %" PRIu32 "", value.as_uint);
+        return;
       }
-      this->publish_state();
-    });
+      this->set_preset_mode_name(it->first, it->second);
+      this->speed = 0;
+    }
+    this->publish_state();
+  });
 }
 
 void MiotFan::dump_config() {

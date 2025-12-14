@@ -62,7 +62,7 @@ void Miot::setup() {
 
   queue_command("MIIO_mcu_version_req");
 
-  this->set_interval("poll", 60000, [this] {
+  this->set_interval("poll", poll_interval_, [this] {
     std::string cmd, part;
     cmd.reserve(MAX_LINE_LENGTH);
     part.reserve(MAX_COMMAND_LENGTH);
@@ -85,8 +85,8 @@ void Miot::setup() {
   });
 
   if (heartbeat_siid_ != 0 && heartbeat_piid_ != 0)
-    this->set_interval("heartbeat", 60000, [this] {
-      set_property(heartbeat_siid_, heartbeat_piid_, MiotValue(60));
+    this->set_interval("heartbeat", heartbeat_interval_, [this] {
+      set_property(heartbeat_siid_, heartbeat_piid_, MiotValue(heartbeat_value_));
     });
 
 #ifdef USE_OTA

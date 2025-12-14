@@ -9,8 +9,11 @@ miot_ns = cg.esphome_ns.namespace("miot")
 Miot = miot_ns.class_("Miot", cg.Component, uart.UARTDevice)
 
 CONF_MIOT_ID = "miot_id"
+CONF_MIOT_POLL_INTERVAL = "miot_poll_interval"    
 CONF_MIOT_HEARTBEAT_SIID = "miot_heartbeat_siid"
 CONF_MIOT_HEARTBEAT_PIID = "miot_heartbeat_piid"
+CONF_MIOT_HEARTBEAT_VALUE = "miot_heartbeat_value"
+CONF_MIOT_HEARTBEAT_INTERVAL = "miot_heartbeat_interval"
 CONF_MIOT_OTA_NET_INDICATOR = "miot_ota_net_indicator"
 CONF_MIOT_SIID = "miot_siid"
 CONF_MIOT_PIID = "miot_piid"
@@ -30,8 +33,11 @@ CONFIG_SCHEMA = cv.All(
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(Miot),
+            cv.Optional(CONF_MIOT_POLL_INTERVAL, default=60000): cv.uint32_t, 
             cv.Optional(CONF_MIOT_HEARTBEAT_SIID): cv.uint32_t,
             cv.Optional(CONF_MIOT_HEARTBEAT_PIID): cv.uint32_t,
+            cv.Optional(CONF_MIOT_HEARTBEAT_VALUE, default=60): cv.uint32_t,
+            cv.Optional(CONF_MIOT_HEARTBEAT_INTERVAL, default=60000): cv.uint32_t,
             cv.Optional(CONF_MIOT_OTA_NET_INDICATOR, default="updating"): cv.string,
         }
     )
@@ -46,6 +52,9 @@ async def to_code(config):
     await uart.register_uart_device(var, config)
     if (CONF_MIOT_HEARTBEAT_SIID in config) and (CONF_MIOT_HEARTBEAT_PIID in config):
         cg.add(var.set_heartbeat_config(config[CONF_MIOT_HEARTBEAT_SIID], config[CONF_MIOT_HEARTBEAT_PIID]))
+    cg.add(var.set_heartbeat_value(config[CONF_MIOT_HEARTBEAT_VALUE]))
+    cg.add(var.set_heartbeat_interval(config[CONF_MIOT_HEARTBEAT_INTERVAL]))
+    cg.add(var.set_poll_interval(config[CONF_MIOT_POLL_INTERVAL]))    
     cg.add(var.set_ota_net_indicator(config[CONF_MIOT_OTA_NET_INDICATOR]))
 
     cg.add_define("USE_OTA_STATE_CALLBACK")

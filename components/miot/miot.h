@@ -77,9 +77,7 @@ class Miot : public Component, public uart::UARTDevice {
   void set_ota_net_indicator(const std::string &indicator) {
     this->ota_net_indicator_ = indicator;
   };
-  void set_heartbeat_interval(uint32_t interval) {
-    this->heartbeat_interval_ = interval;
-  };
+  void set_heartbeat_interval(uint32_t interval);
   void update_poll_interval(uint32_t interval);
   void update_heartbeat_interval(uint32_t interval);
   void update_heartbeat_value(uint32_t value) {

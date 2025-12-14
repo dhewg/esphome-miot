@@ -208,6 +208,12 @@ void Miot::queue_command(const char *fmt, ...) {
   queue_command(cmd);
 }
 
+void Miot::set_heartbeat_interval(uint32_t interval) {
+  // Delegate to the runtime-rescheduling method so scripts using
+  // set_heartbeat_interval() immediately take effect
+  update_heartbeat_interval(interval);
+}
+
 void Miot::update_poll_interval(uint32_t interval) {
   if (this->poll_interval_ == interval)
     return;

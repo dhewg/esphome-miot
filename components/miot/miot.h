@@ -72,6 +72,9 @@ class Miot : public Component,
   std::string get_printable_string(const uint8_t *data, size_t len);
   std::string get_printable_string(const std::string &str);
 
+  void set_poll_interval(uint32_t interval) {
+    this->poll_interval_ = interval;
+  };
   void set_heartbeat_config(uint32_t siid, uint32_t piid) {
     this->heartbeat_siid_ = siid;
     this->heartbeat_piid_ = piid;
@@ -118,6 +121,7 @@ class Miot : public Component,
   std::deque<std::string> mcu_log_;
   std::queue<std::string> command_queue_;
   bool expect_action_result_{false};
+  uint32_t poll_interval_{60};
   uint32_t heartbeat_siid_{0};
   uint32_t heartbeat_piid_{0};
   std::string ota_net_indicator_;
@@ -125,7 +129,6 @@ class Miot : public Component,
 #ifdef USE_EVENT
   std::map<std::pair<uint32_t, uint32_t>, MiotEventListener> event_listeners_;
 #endif
-
 };
 
 }  // namespace miot

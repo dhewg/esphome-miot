@@ -58,7 +58,7 @@ void Miot::setup() {
 
   queue_command("MIIO_mcu_version_req");
 
-  this->set_interval("poll", 60000, [this] {
+  this->set_interval("poll", poll_interval_ * 1000u, [this] {
     std::string cmd, part;
     cmd.reserve(MAX_LINE_LENGTH);
     part.reserve(MAX_COMMAND_LENGTH);

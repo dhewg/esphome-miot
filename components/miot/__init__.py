@@ -9,7 +9,7 @@ miot_ns = cg.esphome_ns.namespace("miot")
 Miot = miot_ns.class_("Miot", cg.Component, uart.UARTDevice)
 
 CONF_MIOT_ID = "miot_id"
-CONF_MIOT_POLL_INTERVAL = "miot_poll_interval"    
+CONF_MIOT_POLL_INTERVAL = "miot_poll_interval"
 CONF_MIOT_HEARTBEAT_SIID = "miot_heartbeat_siid"
 CONF_MIOT_HEARTBEAT_PIID = "miot_heartbeat_piid"
 CONF_MIOT_HEARTBEAT_VALUE = "miot_heartbeat_value"

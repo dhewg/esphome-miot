@@ -80,6 +80,11 @@ class Miot : public Component, public uart::UARTDevice {
   void set_heartbeat_interval(uint32_t interval) {
     this->heartbeat_interval_ = interval;
   };
+  void update_poll_interval(uint32_t interval);
+  void update_heartbeat_interval(uint32_t interval);
+  void update_heartbeat_value(uint32_t value) {
+    this->heartbeat_value_ = value;
+  };
   void register_listener(uint32_t siid, uint32_t piid, bool poll, MiotValueType type, const std::function<void(const MiotValue &value)> &func);
   void queue_command(const std::string &cmd);
   void queue_command(const char *fmt, ...) __attribute__((format(printf, 2, 3)));

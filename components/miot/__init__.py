@@ -33,7 +33,7 @@ CONFIG_SCHEMA = cv.All(
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(Miot),
-            cv.Optional(CONF_MIOT_POLL_INTERVAL, default=60000): cv.uint32_t, 
+            cv.Optional(CONF_MIOT_POLL_INTERVAL, default=60000): cv.uint32_t,
             cv.Optional(CONF_MIOT_HEARTBEAT_SIID): cv.uint32_t,
             cv.Optional(CONF_MIOT_HEARTBEAT_PIID): cv.uint32_t,
             cv.Optional(CONF_MIOT_HEARTBEAT_VALUE, default=60): cv.uint32_t,

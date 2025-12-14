@@ -64,7 +64,7 @@ class Miot : public Component, public uart::UARTDevice {
   std::string get_printable_string(const uint8_t *data, size_t len);
   std::string get_printable_string(const std::string &str);
 
-  void set_poll_value(uint32_t interval) {
+  void set_poll_interval(uint32_t interval) {
     this->poll_interval_ = interval;
   };
   void set_heartbeat_config(uint32_t siid, uint32_t piid) {

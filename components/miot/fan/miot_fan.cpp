@@ -121,16 +121,16 @@ fan::FanTraits MiotFan::get_traits() {
 void MiotFan::control(const fan::FanCall &call) {
   optional<uint8_t> mode;
 
-  const char *mode_from = this->get_preset_mode();
-  const char *mode_to = call.get_preset_mode();
+  const StringRef mode_from = this->get_preset_mode();
+  const StringRef mode_to = StringRef::from_maybe_nullptr(call.get_preset_mode());
 
   if (this->preset_modes_siid_ != 0 && this->preset_modes_piid_ != 0 &&
-      mode_to != nullptr && strlen(mode_to) > 0 &&
-      (mode_from == nullptr || strcmp(mode_from, mode_to) != 0)) {
+      call.has_preset_mode() && !mode_to.empty() &&
+      (!this->has_preset_mode() || mode_from != mode_to)) {
     auto it = std::find_if(preset_modes_.cbegin(),
                            preset_modes_.cend(),
                            [mode_to](auto && pair) {
-                              return pair.second == mode_to;
+                              return mode_to == pair.second;
                            });
     if (it != preset_modes_.end())
       mode = it->first;

@@ -20,7 +20,7 @@ class MiotSelect : public select::Select, public Component {
     this->piid_ = piid;
     this->poll_ = poll;
   }
-  void set_select_mappings(const std::vector<uint8_t> &mappings) { this->mappings_ = std::move(mappings); }
+  void set_select_mappings(const std::vector<uint32_t> &mappings) { this->mappings_ = std::move(mappings); }
 
  protected:
   void control(const std::string &value) override;
@@ -29,7 +29,7 @@ class MiotSelect : public select::Select, public Component {
   uint32_t siid_{0};
   uint32_t piid_{0};
   bool poll_{true};
-  std::vector<uint8_t> mappings_;
+  std::vector<uint32_t> mappings_;
 };
 
 }  // namespace miot

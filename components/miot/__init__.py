@@ -1,6 +1,6 @@
 import esphome.codegen as cg
 import esphome.config_validation as cv
-from esphome.components import uart
+from esphome.components import uart, ota
 from esphome.const import CONF_ID
 
 DEPENDENCIES = ["uart"]
@@ -48,4 +48,4 @@ async def to_code(config):
         cg.add(var.set_heartbeat_config(config[CONF_MIOT_HEARTBEAT_SIID], config[CONF_MIOT_HEARTBEAT_PIID]))
     cg.add(var.set_ota_net_indicator(config[CONF_MIOT_OTA_NET_INDICATOR]))
 
-    cg.add_define("USE_OTA_STATE_CALLBACK")
+    ota.request_ota_state_listeners()

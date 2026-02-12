@@ -64,6 +64,7 @@ Xiaomi Smart Tower Fan | dmaker.fan.p39 | Proprietary chip _MHCWB4P-B_ | [link](
 Xiaomi Smart Tower Fan 2 | xiaomi.fan.p45 | Proprietary chip _MHCWB5G-B_ | [link](../../issues/78) | [link](https://home.miot-spec.com/spec/xiaomi.fan.p45)
 Xiaomi Smart Pet Food Feeder 2 | xiaomi.feeder.iv2001 | Proprietary chip _MHCW05P-B_ | [link](../../pull/72) | [link](https://home.miot-spec.com/spec/xiaomi.feeder.iv2001)
 Xiaomi Smart Graphene Heater | xiaomi.heater.ma8 | No dedicated MCU | [link](../../issues/98) | [link](https://home.miot-spec.com/spec/xiaomi.heater.ma8)
+Xiaomi Smart Evaporative Humidifier | xiaomi.humidifier.3lite | Proprietary chip _MHCWB5G-B_ | [link](../../pull/105) | [link](https://home.miot-spec.com/spec/xiaomi.humidifier.3lite)
 
 ## Building a firmware
 

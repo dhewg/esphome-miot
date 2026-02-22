@@ -15,7 +15,9 @@ void MiotNumber::setup() {
 
 void MiotNumber::control(float value) {
   ESP_LOGV(TAG, "Setting number %" PRIu32 ":%" PRIu32 " %f", this->siid_, this->piid_, value);
-  this->parent_->set_property(this->siid_, this->piid_, MiotValue(value_accuracy_to_string(value, step_to_accuracy_decimals(this->traits.get_step()))));
+  char valstr[VALUE_ACCURACY_MAX_LEN];
+  value_accuracy_to_buf(valstr, value, step_to_accuracy_decimals(this->traits.get_step()));
+  this->parent_->set_property(this->siid_, this->piid_, MiotValue(valstr));
   this->publish_state(value);
 }
 

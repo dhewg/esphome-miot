@@ -25,6 +25,7 @@ Xiaomi Air Purifier Pro H | zhimi.airpurifier.va1 | [link](../../issues/89) | [z
 Xiaomi Smart Air Purifier 4 | zhimi.airp.mb5 <br> zhimi.airp.mb5a | [link](../../wiki/Xiaomi-Smart-Air-Purifier-4) | [zhimi.airp.mb5](config/zhimi.airp.mb5.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.mb5) <br> [link](https://home.miot-spec.com/spec/zhimi.airp.mb5a)
 Xiaomi Smart Air Purifier 4 Lite | zhimi.airp.rmb1 | [link](../../wiki/Xiaomi-Smart-Air-Purifier-4-Lite-(zhimi.airp.rmb1)) | [zhimi.airp.rmb1](config/zhimi.airp.rmb1.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airp.rmb1)
 Xiaomi Smart Air Purifier 4 Pro | zhimi.airp.vb4 |  | [zhimi.airp.vb4](config/zhimi.airp.vb4.yaml) | [link](https://home.miot-spec.com/spec?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-vb4:1)
+Xiaomi Smart Air Purifier Elite | zhimi.airp.meb1 | [link](../../wiki/Xiaomi-Smart-Air-Purifier-Elite) | [zhimi.airp.meb1](config/zhimi.airp.meb1.yaml) | [link](https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:air-purifier:0000A007:zhimi-meb1:1)
 Mi Smart Antibacterial Humidifier | deerma.humidifier.jsq5 | | [deerma.humidifier.jsq5](config/deerma.humidifier.jsq5.yaml) | [link](https://home.miot-spec.com/spec/deerma.humidifier.jsq5)
 Smartmi Evaporative Humidifier 2 | zhimi.humidifier.ca4 | [link](../../wiki/Smartmi-Evaporative-Humidifier-2) | [zhimi.humidifier.ca4](config/zhimi.humidifier.ca4.yaml) | [link](https://home.miot-spec.com/spec/zhimi.humidifier.ca4)
 Smartmi Air Purifier | zhimi.airpurifier.za1 |  | [zhimi.airpurifier.za1](config/zhimi.airpurifier.za1.yaml) | [link](https://home.miot-spec.com/spec/zhimi.airpurifier.za1)
@@ -53,14 +54,16 @@ Known unsupported devices:
 
 Device | Model Version | Reason | Link | MIoT Specification
 ---|---|---|---|---
-Mi Air Purifier 2S | zhimi.airpurifier.mc1 | Proprietary chip _MHCW02P_ | [link](../../wiki/Xiaomi-Mi-Air-Purifier-2H-2S)|[link](https://home.miot-spec.com/spec/zhimi.airpurifier.mc1)
-Mi Air Purifier 2H | zhimi.airpurifier.mc2 | Proprietary chip _MHCW02P_ | [link](../../wiki/Xiaomi-Mi-Air-Purifier-2H-2S)|[link](https://home.miot-spec.com/spec/zhimi.airpurifier.mc2)
-Xiaomi Air Purifier 4 Lite (CN Model) | zhimi.airp.rma3 | No dedicated MCU | [link](../../issues/34)|[link](https://home.miot-spec.com/spec/zhimi.airp.rma3)
-Xiaomi Smart Air Purifier 4 Compact | zhimi.airp.cpa4 | No dedicated MCU | [link](../../issues/22#issuecomment-2137163103)|[link](https://home.miot-spec.com/spec/zhimi.airp.cpa4)
-Smartmi Evaporative Humidifier| zhimi.humidifier.cb1 | Proprietary chip _MHCWB2P_ | [link](../../issues/26#issuecomment-2417148320)|[link](https://home.miot-spec.com/spec/zhimi.humidifier.cb1)
-Xiaomi Smart Tower Fan | dmaker.fan.p39 | Proprietary chip _MHCWB4P-B_ | [link](../../pull/52) |[link](https://home.miot-spec.com/spec/dmaker.fan.p39)
-Xiaomi Smart Tower Fan 2 | xiaomi.fan.p45 | Proprietary chip _MHCWB5G-B_ | [link](../../issues/78) |[link](https://home.miot-spec.com/spec/xiaomi.fan.p45)
-Xiaomi Smart Pet Food Feeder 2 | xiaomi.feeder.iv2001 | Proprietary chip _MHCW05P-B_ | [link](../../pull/72)| [link](https://home.miot-spec.com/spec/xiaomi.feeder.iv2001)
+Mi Air Purifier 2S | zhimi.airpurifier.mc1 | Proprietary chip _MHCW02P_ | [link](../../wiki/Xiaomi-Mi-Air-Purifier-2H-2S) | [link](https://home.miot-spec.com/spec/zhimi.airpurifier.mc1)
+Mi Air Purifier 2H | zhimi.airpurifier.mc2 | Proprietary chip _MHCW02P_ | [link](../../wiki/Xiaomi-Mi-Air-Purifier-2H-2S) | [link](https://home.miot-spec.com/spec/zhimi.airpurifier.mc2)
+Xiaomi Air Purifier 4 Lite (CN Model) | zhimi.airp.rma3 | No dedicated MCU | [link](../../issues/34) | [link](https://home.miot-spec.com/spec/zhimi.airp.rma3)
+Xiaomi Smart Air Purifier 4 Compact | zhimi.airp.cpa4 | No dedicated MCU | [link](../../issues/22#issuecomment-2137163103) | [link](https://home.miot-spec.com/spec/zhimi.airp.cpa4)
+Smartmi Evaporative Humidifier | zhimi.humidifier.cb1 | Proprietary chip _MHCWB2P_ | [link](../../issues/26#issuecomment-2417148320) | [link](https://home.miot-spec.com/spec/zhimi.humidifier.cb1)
+Smartmi Evaporative Humidifier 3 | zhimi.humidifier.ca6 | No dedicated MCU | [link](../../issues/102) | [link](https://home.miot-spec.com/spec/zhimi.humidifier.ca6)
+Xiaomi Smart Tower Fan | dmaker.fan.p39 | Proprietary chip _MHCWB4P-B_ | [link](../../pull/52) | [link](https://home.miot-spec.com/spec/dmaker.fan.p39)
+Xiaomi Smart Tower Fan 2 | xiaomi.fan.p45 | Proprietary chip _MHCWB5G-B_ | [link](../../issues/78) | [link](https://home.miot-spec.com/spec/xiaomi.fan.p45)
+Xiaomi Smart Pet Food Feeder 2 | xiaomi.feeder.iv2001 | Proprietary chip _MHCW05P-B_ | [link](../../pull/72) | [link](https://home.miot-spec.com/spec/xiaomi.feeder.iv2001)
+Xiaomi Smart Graphene Heater | xiaomi.heater.ma8 | No dedicated MCU | [link](../../issues/98) | [link](https://home.miot-spec.com/spec/xiaomi.heater.ma8)
 
 ## Building a firmware
 

@@ -9,6 +9,10 @@
 #include "esphome/core/component.h"
 #include "esphome/components/uart/uart.h"
 
+#ifdef USE_OTA_STATE_LISTENER
+#include "esphome/components/ota/ota_backend.h"
+#endif
+
 namespace esphome {
 namespace miot {
 
@@ -54,7 +58,11 @@ enum MiotResultFormat {
   mrfEvent,
 };
 
-class Miot : public Component, public uart::UARTDevice {
+class Miot : public Component,
+#ifdef USE_OTA_STATE_LISTENER
+             public ota::OTAGlobalStateListener,
+#endif
+             public uart::UARTDevice {
  public:
   float get_setup_priority() const override { return setup_priority::DATA; }
   void setup() override;
@@ -90,6 +98,10 @@ class Miot : public Component, public uart::UARTDevice {
   void mcu_log(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
   void process_message_();
   void process_event_(uint32_t siid, uint32_t eiid);
+
+#ifdef USE_OTA_STATE_LISTENER
+  void on_ota_global_state(ota::OTAState state, float progress, uint8_t error, ota::OTAComponent *comp) override;
+#endif
 
   std::string get_printable_rx_message() {
     return get_printable_string(rx_message_, rx_count_);

@@ -14,10 +14,6 @@
 #include "esphome/components/captive_portal/captive_portal.h"
 #endif
 
-#ifdef USE_OTA
-#include "esphome/components/ota/ota_backend.h"
-#endif
-
 #ifdef USE_TIME
 #include "esphome/components/time/real_time_clock.h"
 #endif
@@ -89,23 +85,26 @@ void Miot::setup() {
       set_property(heartbeat_siid_, heartbeat_piid_, MiotValue(60));
     });
 
-#ifdef USE_OTA
-  ota::get_global_ota_callback()->add_on_state_callback(
-    [this](ota::OTAState state, float progress, uint8_t error, ota::OTAComponent *comp) {
-      switch (state) {
-      case ota::OTA_STARTED:
-        // directly send this to indicate a firmware update, as loop() won't get called anymore
-        send_reply_((std::string("down MIIO_net_change ") + ota_net_indicator_).c_str());
-        break;
-      case ota::OTA_ERROR:
-        queue_net_change_command(true);
-        break;
-      default:
-        break;
-    }
-  });
+#ifdef USE_OTA_STATE_LISTENER
+  ota::get_global_ota_callback()->add_global_state_listener(this);
 #endif
 }
+
+#ifdef USE_OTA_STATE_LISTENER
+void Miot::on_ota_global_state(ota::OTAState state, float progress, uint8_t error, ota::OTAComponent *comp) {
+  switch (state) {
+  case ota::OTA_STARTED:
+    // directly send this to indicate a firmware update, as loop() won't get called anymore
+    send_reply_((std::string("down MIIO_net_change ") + ota_net_indicator_).c_str());
+    break;
+  case ota::OTA_ERROR:
+    queue_net_change_command(true);
+    break;
+  default:
+    break;
+  }
+}
+#endif
 
 void Miot::loop() {
   uint8_t c;

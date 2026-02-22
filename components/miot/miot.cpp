@@ -233,6 +233,22 @@ void Miot::set_property(uint32_t siid, uint32_t piid, const MiotValue &value) {
   }
 }
 
+bool Miot::get_cached_property_uint(uint32_t siid, uint32_t piid, uint32_t *out) const {
+  if (out == nullptr)
+    return false;
+
+  auto it = property_cache_.find(std::make_pair(siid, piid));
+  if (it == property_cache_.end())
+    return false;
+
+  auto parsed = parse_number<uint32_t>(it->second);
+  if (!parsed.has_value())
+    return false;
+
+  *out = *parsed;
+  return true;
+}
+
 void Miot::execute_action(uint32_t siid, uint32_t aiid, const std::string &args) {
   if (args.empty())
     queue_command("action %" PRIu32 " %" PRIu32, siid, aiid);
@@ -248,6 +264,8 @@ void Miot::send_reply_(const char *reply) {
 }
 
 void Miot::update_property(uint32_t siid, uint32_t piid, const char *value) {
+  property_cache_[std::make_pair(siid, piid)] = value == nullptr ? "" : value;
+
   if (heartbeat_siid_ != 0 && heartbeat_piid_ != 0 && siid == heartbeat_siid_ && piid == heartbeat_piid_)
     return;
 

@@ -4,6 +4,7 @@
 #include <deque>
 #include <map>
 #include <queue>
+#include <string>
 #include <utility>
 
 #include "esphome/core/component.h"
@@ -84,6 +85,7 @@ class Miot : public Component,
   void queue_command(const char *fmt, ...) __attribute__((format(printf, 2, 3)));
   void queue_net_change_command(bool force);
   void set_property(uint32_t siid, uint32_t piid, const MiotValue &value);
+  bool get_cached_property_uint(uint32_t siid, uint32_t piid, uint32_t *out) const;
   void execute_action(uint32_t siid, uint32_t aiid, const std::string &args);
 #ifdef USE_EVENT
   void register_event_listener(uint32_t siid, uint32_t eiid, const std::function<void()> &func);
@@ -121,6 +123,7 @@ class Miot : public Component,
   uint32_t heartbeat_siid_{0};
   uint32_t heartbeat_piid_{0};
   std::string ota_net_indicator_;
+  std::map<std::pair<uint32_t, uint32_t>, std::string> property_cache_;
   std::map<std::pair<uint32_t, uint32_t>, MiotListener> listeners_;
 #ifdef USE_EVENT
   std::map<std::pair<uint32_t, uint32_t>, MiotEventListener> event_listeners_;

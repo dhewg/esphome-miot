@@ -23,6 +23,7 @@ from .. import (
 DEPENDENCIES = ["miot"]
 
 MiotFan = miot_ns.class_("MiotFan", cg.Component, fan.Fan)
+CONF_LOW_WATER_GUARD = "low_water_guard"
 
 def ensure_option_map(value):
     cv.check_not_templatable(value)
@@ -77,6 +78,13 @@ CONFIG_SCHEMA = cv.All(
                     cv.Required(CONF_OPTIONS): ensure_option_map,
                 }
             ),
+            cv.Optional(CONF_LOW_WATER_GUARD): cv.Schema(
+                {
+                    cv.Required(CONF_MIOT_SIID): cv.uint32_t,
+                    cv.Required(CONF_MIOT_PIID): cv.uint32_t,
+                    cv.Required(CONF_MIN_VALUE): cv.uint32_t,
+                }
+            ),
         }
     ).extend(cv.COMPONENT_SCHEMA),
 )
@@ -100,3 +108,5 @@ async def to_code(config):
         options_map = preset_modes[CONF_OPTIONS]
         for k in options_map:
             cg.add(var.set_preset_mode_name(k, options_map[k]))
+    if low_water_guard := config.get(CONF_LOW_WATER_GUARD):
+        cg.add(var.set_low_water_guard_config(low_water_guard[CONF_MIOT_SIID], low_water_guard[CONF_MIOT_PIID], low_water_guard[CONF_MIN_VALUE]))

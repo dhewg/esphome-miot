@@ -66,6 +66,10 @@ fan:
       miot_piid: 5
       min_value: 0
       max_value: 3
+    low_water_guard:
+      miot_siid: 2
+      miot_piid: 7
+      min_value: 10
 
 switch:
   - platform: "miot"

@@ -35,6 +35,12 @@ class MiotFan : public Component, public fan::Fan {
     this->preset_modes_siid_ = siid;
     this->preset_modes_piid_ = piid;
   }
+  void set_low_water_guard_config(uint32_t siid, uint32_t piid, uint32_t min) {
+    this->low_water_guard_enabled_ = true;
+    this->low_water_guard_siid_ = siid;
+    this->low_water_guard_piid_ = piid;
+    this->low_water_guard_min_ = min;
+  }
   void set_preset_mode_name(uint8_t key, const char *value) {
     if (value == nullptr || strlen(value) == 0)
       manual_speed_preset_ = key;
@@ -59,6 +65,10 @@ class MiotFan : public Component, public fan::Fan {
   uint32_t direction_piid_{0};
   uint32_t preset_modes_siid_{0};
   uint32_t preset_modes_piid_{0};
+  bool low_water_guard_enabled_{false};
+  uint32_t low_water_guard_siid_{0};
+  uint32_t low_water_guard_piid_{0};
+  uint32_t low_water_guard_min_{0};
   std::map<uint8_t, const char *> preset_modes_;
   optional<uint8_t> manual_speed_preset_;
 };

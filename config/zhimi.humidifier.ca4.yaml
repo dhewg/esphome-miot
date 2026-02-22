@@ -66,6 +66,15 @@ fan:
       miot_piid: 5
       min_value: 0
       max_value: 3
+    expose_speed: false
+    preset_modes:
+      miot_siid: 2
+      miot_piid: 5
+      options:
+        0: "Auto"
+        1: "Low"
+        2: "Medium"
+        3: "High"
 
 switch:
   - platform: "miot"

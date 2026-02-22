@@ -23,6 +23,7 @@ class MiotFan : public Component, public fan::Fan {
     this->speed_max_ = max;
     this->speed_step_ = step;
   }
+  void set_expose_speed(bool expose_speed) { this->expose_speed_ = expose_speed; }
   void set_oscillating_config(uint32_t siid, uint32_t piid) {
     this->oscillating_siid_ = siid;
     this->oscillating_piid_ = piid;
@@ -52,6 +53,7 @@ class MiotFan : public Component, public fan::Fan {
   uint32_t state_piid_{0};
   uint32_t speed_siid_{0};
   uint32_t speed_piid_{0};
+  bool expose_speed_{true};
   uint32_t speed_min_{0}, speed_max_{0}, speed_step_{0};
   uint32_t oscillating_siid_{0};
   uint32_t oscillating_piid_{0};

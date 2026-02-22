@@ -98,6 +98,12 @@ void MiotFan::dump_config() {
     if (this->manual_speed_preset_.has_value())
       ESP_LOGCONFIG(TAG, "  Manual Preset Mode: %" PRIu8, *this->manual_speed_preset_);
   }
+  if (this->low_water_guard_enabled_) {
+    ESP_LOGCONFIG(TAG, "  Low Water Guard:");
+    ESP_LOGCONFIG(TAG, "    SIID: %" PRIu32, this->low_water_guard_siid_);
+    ESP_LOGCONFIG(TAG, "    PIID: %" PRIu32, this->low_water_guard_piid_);
+    ESP_LOGCONFIG(TAG, "    Min Value: %" PRIu32, this->low_water_guard_min_);
+  }
 }
 
 fan::FanTraits MiotFan::get_traits() {
@@ -116,6 +122,8 @@ fan::FanTraits MiotFan::get_traits() {
 
 void MiotFan::control(const fan::FanCall &call) {
   optional<uint8_t> mode;
+  const auto requested_state = call.get_state();
+  const bool turning_on = requested_state.has_value() && *requested_state && !this->state;
 
   const StringRef mode_from = this->get_preset_mode();
   const StringRef mode_to = StringRef::from_maybe_nullptr(call.get_preset_mode());
@@ -132,21 +140,53 @@ void MiotFan::control(const fan::FanCall &call) {
       mode = it->first;
   }
 
-  if (mode.has_value()) {
-    this->speed = 0;
-    this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*mode));
-  } else if (call.get_speed().has_value()) {
-    this->clear_preset_mode_();
-    if (this->manual_speed_preset_.has_value())
-      this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*this->manual_speed_preset_));
-    this->parent_->set_property(this->speed_siid_, this->speed_piid_, MiotValue(this->speed_min_ + *call.get_speed() * this->speed_step_ - 1));
+  // Some MIoT devices reject speed/preset updates while off (e.g. -4002).
+  // For an off->on transition, only send the power command first.
+  if (turning_on) {
+    this->parent_->set_property(this->state_siid_, this->state_piid_, MiotValue("true"));
+    if (mode.has_value() || call.get_speed().has_value() || call.get_oscillating().has_value() || call.get_direction().has_value()) {
+      ESP_LOGD(TAG, "Deferring fan attribute update while turning on to avoid rejected writes");
+    }
+    return;
   }
-  if (this->oscillating_siid_ != 0 && this->oscillating_piid_ != 0 && call.get_oscillating().has_value())
-    this->parent_->set_property(this->oscillating_siid_, this->oscillating_piid_, MiotValue(*call.get_oscillating() ? "true" : "false"));
-  if (this->direction_siid_ != 0 && this->direction_piid_ != 0 && call.get_direction().has_value())
-    this->parent_->set_property(this->direction_siid_, this->direction_piid_, MiotValue(*call.get_direction() == fan::FanDirection::REVERSE ? "true" : "false"));
-  if (call.get_state().has_value())
-    this->parent_->set_property(this->state_siid_, this->state_piid_, MiotValue(*call.get_state() ? "true" : "false"));
+
+  const bool target_state = requested_state.value_or(this->state);
+  if (target_state) {
+    if (mode.has_value()) {
+      this->speed = 0;
+      this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*mode));
+    } else if (call.get_speed().has_value()) {
+      if (this->low_water_guard_enabled_) {
+        uint32_t level = 0;
+        if (this->parent_->get_cached_property_uint(this->low_water_guard_siid_, this->low_water_guard_piid_, &level)) {
+          if (level <= this->low_water_guard_min_) {
+            ESP_LOGW(TAG,
+                     "Skipping speed write %" PRIu32 ":%" PRIu32 " due to low-water guard (%" PRIu32 ":%" PRIu32 "=%" PRIu32 " <= %" PRIu32 ")",
+                     this->speed_siid_, this->speed_piid_, this->low_water_guard_siid_, this->low_water_guard_piid_, level,
+                     this->low_water_guard_min_);
+            return;
+          }
+        } else {
+          ESP_LOGD(TAG, "Low-water guard: no cached value for %" PRIu32 ":%" PRIu32 ", allowing speed write",
+                   this->low_water_guard_siid_, this->low_water_guard_piid_);
+        }
+      }
+      this->clear_preset_mode_();
+      if (this->manual_speed_preset_.has_value())
+        this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*this->manual_speed_preset_));
+      this->parent_->set_property(this->speed_siid_, this->speed_piid_, MiotValue(this->speed_min_ + *call.get_speed() * this->speed_step_ - 1));
+    }
+    if (this->oscillating_siid_ != 0 && this->oscillating_piid_ != 0 && call.get_oscillating().has_value())
+      this->parent_->set_property(this->oscillating_siid_, this->oscillating_piid_, MiotValue(*call.get_oscillating() ? "true" : "false"));
+    if (this->direction_siid_ != 0 && this->direction_piid_ != 0 && call.get_direction().has_value())
+      this->parent_->set_property(this->direction_siid_, this->direction_piid_, MiotValue(*call.get_direction() == fan::FanDirection::REVERSE ? "true" : "false"));
+  } else if (mode.has_value() || call.get_speed().has_value() || call.get_oscillating().has_value() || call.get_direction().has_value()) {
+    ESP_LOGW(TAG, "Ignoring fan attribute update while fan is off");
+  }
+
+  // Keep the original explicit "off" handling after all other updates.
+  if (requested_state.has_value() && !*requested_state)
+    this->parent_->set_property(this->state_siid_, this->state_piid_, MiotValue("false"));
 }
 
 }  // namespace miot

@@ -1,4 +1,5 @@
-# https://home.miot-spec.com/spec/zhimi.humidifier.ca4
+# MIoT spec: https://home.miot-spec.com/spec/zhimi.humidifier.ca4
+# Instance (v2): https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:humidifier:0000A00E:zhimi-ca4:2
 
 external_components:
   source: github://dhewg/esphome-miot@main
@@ -18,6 +19,7 @@ esp32:
     sdkconfig_options:
       CONFIG_FREERTOS_UNICORE: y
     advanced:
+      # Required on some devices due to EFUSE layout differences
       ignore_efuse_custom_mac: true
       ignore_efuse_mac_crc: true
 
@@ -52,8 +54,15 @@ uart:
   rx_pin: GPIO16
   baud_rate: 115200
 
+time:
+  - platform: homeassistant
+    id: ha_time
+    timezone: Europe/Amsterdam
+
 miot:
   id: miot_main
+
+# Controls (writable MIoT properties)
 
 fan:
   - platform: "miot"
@@ -73,18 +82,22 @@ switch:
     miot_piid: 8
     name: "Dry"
     icon: mdi:water-minus
+
+  # "Alarm" is the device buzzer / notification sounds in the official MIoT spec.
   - platform: "miot"
     miot_siid: 4
     miot_piid: 1
     name: "Notification Sounds"
     icon: mdi:volume-high
     entity_category: config
+
   - platform: "miot"
     miot_siid: 6
     miot_piid: 1
     name: "Child Lock"
     icon: mdi:lock
     entity_category: config
+
   - platform: "miot"
     miot_siid: 7
     miot_piid: 5
@@ -104,6 +117,23 @@ select:
       1: "Glimmer"
       2: "Brightest"
 
+  # Region setting used by the MCU (writable).
+  - platform: "miot"
+    miot_siid: 7
+    miot_piid: 4
+    name: "Country Code"
+    icon: mdi:earth
+    entity_category: config
+    options:
+      0: "Unknown"
+      1: "US"
+      7: "RU"
+      33: "FR"
+      44: "EU (Europe)"
+      81: "JP"
+      82: "KR"
+      86: "CN"
+
 number:
   - platform: "miot"
     miot_siid: 2
@@ -115,13 +145,16 @@ number:
     max_value: 80
     step: 1
 
+# Sensors (read-only MIoT properties)
+
 sensor:
   - platform: "miot"
     miot_siid: 2
     miot_piid: 2
     name: "Device Fault Code"
-    icon: mdi:fan-alert
+    icon: mdi:alert-circle-outline
     entity_category: diagnostic
+
   - platform: "miot"
     miot_siid: 3
     miot_piid: 7
@@ -130,6 +163,7 @@ sensor:
     device_class: temperature
     state_class: measurement
     icon: mdi:thermometer
+
   - platform: "miot"
     miot_siid: 3
     miot_piid: 9
@@ -138,29 +172,76 @@ sensor:
     device_class: humidity
     state_class: measurement
     icon: mdi:water-percent
+
   - platform: "miot"
     miot_siid: 2
     miot_piid: 7
     name: "Water Level"
     unit_of_measurement: "%"
     state_class: measurement
-    icon: mdi:water-percent
+    icon: mdi:cup-water
     filters:
       - clamp:
           min_value: 0
           max_value: 100
           ignore_out_of_range: true
+
+  # "Speed Level" is a writable setpoint (200..2000, step 10) in the MIoT spec.
   - platform: "miot"
     miot_siid: 2
     miot_piid: 11
-    name: "Motor Speed"
+    name: "Motor Speed Setpoint"
     unit_of_measurement: "rpm"
     icon: mdi:fan
+    entity_category: diagnostic
+
   - platform: "miot"
     miot_siid: 7
     miot_piid: 1
     name: "Actual Speed"
     unit_of_measurement: "rpm"
     icon: mdi:fan
+
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 9
+    name: "Total Use Time"
+    unit_of_measurement: "h"
+    icon: mdi:timer-outline
+    entity_category: diagnostic
+    state_class: total_increasing
+    filters:
+      - multiply: 0.0002777778
+
+  - platform: "miot"
+    miot_siid: 7
+    miot_piid: 3
+    name: "Power Time"
+    unit_of_measurement: "h"
+    icon: mdi:timer
+    entity_category: diagnostic
+    state_class: measurement
+    filters:
+      - multiply: 0.0002777778
+
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 10
+    name: "Last Button Pressed"
+    icon: mdi:gesture-tap-button
+    entity_category: diagnostic
+
   - platform: internal_temperature
     name: "MCU Temperature"
+    unit_of_measurement: "°C"
+    device_class: temperature
+    state_class: measurement
+
+  - platform: "miot"
+    miot_siid: 3
+    miot_piid: 8
+    name: "Temperature (F)"
+    unit_of_measurement: "°F"
+    device_class: temperature
+    state_class: measurement
+    entity_category: diagnostic

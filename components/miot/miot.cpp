@@ -38,6 +38,61 @@ static const char *const NET_CLOUD = "cloud";
 static const size_t MAX_COMMAND_LENGTH = 60;
 static const size_t MAX_MCU_LOG_LENGTH = 32;
 
+static std::string parse_raw_command_arg(const uint8_t *message, size_t message_len, const char *command) {
+  const size_t command_len = std::strlen(command);
+  if (message_len <= command_len)
+    return {};
+  if (std::memcmp(message, command, command_len) != 0)
+    return {};
+
+  if (message[command_len] != ' ' && message[command_len] != '\0')
+    return {};
+
+  size_t arg_start = command_len + 1;
+  while (arg_start < message_len && (message[arg_start] == ' ' || message[arg_start] == '\0'))
+    arg_start++;
+  if (arg_start >= message_len)
+    return {};
+
+  size_t arg_end = arg_start;
+  while (arg_end < message_len && message[arg_end] != ' ' && message[arg_end] != '\0')
+    arg_end++;
+  if (arg_end <= arg_start)
+    return {};
+
+  return std::string(reinterpret_cast<const char *>(message + arg_start), arg_end - arg_start);
+}
+
+static bool parse_country_code_to_miot_value(const std::string &country_code, uint32_t *value) {
+  std::string normalized(country_code);
+  for (char &c : normalized)
+    c = std::toupper(static_cast<unsigned char>(c));
+
+  if (normalized == "US") {
+    *value = 1;
+  } else if (normalized == "RU") {
+    *value = 7;
+  } else if (normalized == "FR") {
+    *value = 33;
+  } else if (normalized == "EU") {
+    *value = 44;
+  } else if (normalized == "JP") {
+    *value = 81;
+  } else if (normalized == "KR") {
+    *value = 82;
+  } else if (normalized == "CN") {
+    *value = 86;
+  } else if (normalized == "HK") {
+    *value = 852;
+  } else if (normalized == "TW") {
+    *value = 886;
+  } else {
+    return false;
+  }
+
+  return true;
+}
+
 void Miot::setup() {
   // discard initial incoming serial buffer
   uint8_t c;
@@ -433,6 +488,18 @@ void Miot::process_message_() {
     send_reply_(reply.c_str());
   } else if (cmd == "mac") {
     send_reply_(get_mac_address().c_str());
+  } else if (cmd == "country_code") {
+    // some MCUs send this as "country_code\0CN", so parse from the raw buffer
+    auto country_code = parse_raw_command_arg(rx_message_, rx_count_, "country_code");
+    if (!country_code.empty()) {
+      uint32_t country_value = 0;
+      if (parse_country_code_to_miot_value(country_code, &country_value)) {
+        auto value = to_string(country_value);
+        update_property(7, 4, value.c_str());
+      }
+      ESP_LOGD(TAG, "MCU country_code command: %s", get_printable_string(country_code).c_str());
+    }
+    send_reply_("ok");
   } else if (cmd == "model") {
     model_ = strtok_r(nullptr, " ", &saveptr);
     if (!model_.empty())

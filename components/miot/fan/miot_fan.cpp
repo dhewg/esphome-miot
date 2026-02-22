@@ -80,6 +80,7 @@ void MiotFan::dump_config() {
   ESP_LOGCONFIG(TAG, "  State PIID: %" PRIu32, this->state_piid_);
   ESP_LOGCONFIG(TAG, "  Speed SIID: %" PRIu32, this->speed_siid_);
   ESP_LOGCONFIG(TAG, "  Speed PIID: %" PRIu32, this->speed_piid_);
+  ESP_LOGCONFIG(TAG, "  Expose Speed: %s", YESNO(this->expose_speed_));
   ESP_LOGCONFIG(TAG, "  Speed Min/Max/Step: %" PRIu32 "/%" PRIu32 "/%" PRIu32, this->speed_min_, this->speed_max_, this->speed_step_);
   if (this->oscillating_siid_ != 0 && this->oscillating_piid_ != 0) {
     ESP_LOGCONFIG(TAG, "  Oscillating SIID: %" PRIu32, this->oscillating_siid_);
@@ -101,10 +102,12 @@ void MiotFan::dump_config() {
 }
 
 fan::FanTraits MiotFan::get_traits() {
+  const bool supports_speed = this->expose_speed_ && this->speed_siid_ != 0 && this->speed_piid_ != 0;
+  const int speed_count = supports_speed ? static_cast<int>((this->speed_max_ - this->speed_min_) / this->speed_step_ + 1) : 0;
   fan::FanTraits traits(this->oscillating_siid_ != 0 && this->oscillating_piid_ != 0,
-                        this->speed_siid_ != 0 && this->speed_piid_ != 0,
+                        supports_speed,
                         this->direction_siid_ != 0 && this->direction_piid_ != 0,
-                        (this->speed_max_ - this->speed_min_) / this->speed_step_ + 1);
+                        speed_count);
 
   std::vector<const char *> modes;
   for (auto const &iter : preset_modes_)
@@ -136,6 +139,10 @@ void MiotFan::control(const fan::FanCall &call) {
     this->speed = 0;
     this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*mode));
   } else if (call.get_speed().has_value()) {
+    if (!this->expose_speed_) {
+      ESP_LOGW(TAG, "Ignoring speed update because speed control is disabled for this fan");
+      return;
+    }
     this->clear_preset_mode_();
     if (this->manual_speed_preset_.has_value())
       this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*this->manual_speed_preset_));

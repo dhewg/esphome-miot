@@ -23,6 +23,7 @@ from .. import (
 DEPENDENCIES = ["miot"]
 
 MiotFan = miot_ns.class_("MiotFan", cg.Component, fan.Fan)
+CONF_EXPOSE_SPEED = "expose_speed"
 
 def ensure_option_map(value):
     cv.check_not_templatable(value)
@@ -58,6 +59,7 @@ CONFIG_SCHEMA = cv.All(
                     cv.Optional(CONF_STEP, default=1): cv.uint32_t,
                 }
             ),
+            cv.Optional(CONF_EXPOSE_SPEED, default=True): cv.boolean,
             cv.Optional(CONF_OSCILLATING): cv.Schema(
                 {
                     cv.Required(CONF_MIOT_SIID): cv.uint32_t,
@@ -91,6 +93,7 @@ async def to_code(config):
     cg.add(var.set_state_config(state[CONF_MIOT_SIID], state[CONF_MIOT_PIID]))
     speed = config.get(CONF_SPEED)
     cg.add(var.set_speed_config(speed[CONF_MIOT_SIID], speed[CONF_MIOT_PIID], speed[CONF_MIN_VALUE], speed[CONF_MAX_VALUE], speed[CONF_STEP]))
+    cg.add(var.set_expose_speed(config[CONF_EXPOSE_SPEED]))
     if oscillating := config.get(CONF_OSCILLATING):
         cg.add(var.set_oscillating_config(oscillating[CONF_MIOT_SIID], oscillating[CONF_MIOT_PIID]))
     if direction := config.get(CONF_DIRECTION):

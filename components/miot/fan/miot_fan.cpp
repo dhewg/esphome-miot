@@ -116,6 +116,7 @@ fan::FanTraits MiotFan::get_traits() {
 
 void MiotFan::control(const fan::FanCall &call) {
   optional<uint8_t> mode;
+  const auto requested_state = call.get_state();
 
   const StringRef mode_from = this->get_preset_mode();
   const StringRef mode_to = StringRef::from_maybe_nullptr(call.get_preset_mode());
@@ -132,21 +133,33 @@ void MiotFan::control(const fan::FanCall &call) {
       mode = it->first;
   }
 
-  if (mode.has_value()) {
-    this->speed = 0;
-    this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*mode));
-  } else if (call.get_speed().has_value()) {
-    this->clear_preset_mode_();
-    if (this->manual_speed_preset_.has_value())
-      this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*this->manual_speed_preset_));
-    this->parent_->set_property(this->speed_siid_, this->speed_piid_, MiotValue(this->speed_min_ + *call.get_speed() * this->speed_step_ - 1));
+  // Some MIoT devices reject speed/preset updates while off (e.g. -4002).
+  // Apply an explicit "on" state first if requested.
+  if (requested_state.has_value() && *requested_state)
+    this->parent_->set_property(this->state_siid_, this->state_piid_, MiotValue("true"));
+
+  const bool target_state = requested_state.value_or(this->state);
+  if (target_state) {
+    if (mode.has_value()) {
+      this->speed = 0;
+      this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*mode));
+    } else if (call.get_speed().has_value()) {
+      this->clear_preset_mode_();
+      if (this->manual_speed_preset_.has_value())
+        this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*this->manual_speed_preset_));
+      this->parent_->set_property(this->speed_siid_, this->speed_piid_, MiotValue(this->speed_min_ + *call.get_speed() * this->speed_step_ - 1));
+    }
+    if (this->oscillating_siid_ != 0 && this->oscillating_piid_ != 0 && call.get_oscillating().has_value())
+      this->parent_->set_property(this->oscillating_siid_, this->oscillating_piid_, MiotValue(*call.get_oscillating() ? "true" : "false"));
+    if (this->direction_siid_ != 0 && this->direction_piid_ != 0 && call.get_direction().has_value())
+      this->parent_->set_property(this->direction_siid_, this->direction_piid_, MiotValue(*call.get_direction() == fan::FanDirection::REVERSE ? "true" : "false"));
+  } else if (mode.has_value() || call.get_speed().has_value() || call.get_oscillating().has_value() || call.get_direction().has_value()) {
+    ESP_LOGW(TAG, "Ignoring fan attribute update while fan is off");
   }
-  if (this->oscillating_siid_ != 0 && this->oscillating_piid_ != 0 && call.get_oscillating().has_value())
-    this->parent_->set_property(this->oscillating_siid_, this->oscillating_piid_, MiotValue(*call.get_oscillating() ? "true" : "false"));
-  if (this->direction_siid_ != 0 && this->direction_piid_ != 0 && call.get_direction().has_value())
-    this->parent_->set_property(this->direction_siid_, this->direction_piid_, MiotValue(*call.get_direction() == fan::FanDirection::REVERSE ? "true" : "false"));
-  if (call.get_state().has_value())
-    this->parent_->set_property(this->state_siid_, this->state_piid_, MiotValue(*call.get_state() ? "true" : "false"));
+
+  // Keep the original explicit "off" handling after all other updates.
+  if (requested_state.has_value() && !*requested_state)
+    this->parent_->set_property(this->state_siid_, this->state_piid_, MiotValue("false"));
 }
 
 }  // namespace miot

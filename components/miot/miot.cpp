@@ -58,7 +58,7 @@ void Miot::setup() {
 
   queue_command("MIIO_mcu_version_req");
 
-  this->set_interval("poll", 60000, [this] {
+  this->set_interval("poll", poll_interval_, [this] {
     std::string cmd, part;
     cmd.reserve(MAX_LINE_LENGTH);
     part.reserve(MAX_COMMAND_LENGTH);
@@ -81,8 +81,8 @@ void Miot::setup() {
   });
 
   if (heartbeat_siid_ != 0 && heartbeat_piid_ != 0)
-    this->set_interval("heartbeat", 60000, [this] {
-      set_property(heartbeat_siid_, heartbeat_piid_, MiotValue(60));
+    this->set_interval("heartbeat", heartbeat_interval_, [this] {
+      set_property(heartbeat_siid_, heartbeat_piid_, MiotValue(heartbeat_value_));
     });
 
 #ifdef USE_OTA_STATE_LISTENER
@@ -205,6 +205,64 @@ void Miot::queue_command(const char *fmt, ...) {
   va_end(args);
   cmd.resize(len);
   queue_command(cmd);
+}
+
+void Miot::set_heartbeat_interval(uint32_t interval) {
+  // Delegate to the runtime-rescheduling method so scripts using
+  // set_heartbeat_interval() immediately take effect
+  update_heartbeat_interval(interval);
+}
+
+void Miot::update_poll_interval(uint32_t interval) {
+  if (this->poll_interval_ == interval)
+    return;
+  
+  this->poll_interval_ = interval;
+  
+  // Cancel old interval and set new one
+  this->cancel_interval("poll");
+  
+  this->set_interval("poll", poll_interval_, [this] {
+    std::string cmd, part;
+    cmd.reserve(MAX_LINE_LENGTH);
+    part.reserve(MAX_COMMAND_LENGTH);
+
+    for (auto it = listeners_.cbegin(); it != listeners_.cend(); ++it) {
+      if ((*it).second.poll) {
+        part = str_snprintf(" %" PRIu32 " %" PRIu32, 32, (*it).first.first, (*it).first.second);
+
+        if (cmd.size() + part.size() > MAX_COMMAND_LENGTH) {
+          queue_command("get_properties" + cmd);
+          cmd.clear();
+        }
+
+        cmd += part;
+      }
+    }
+
+    if (!cmd.empty())
+      queue_command("get_properties" + cmd);
+  });
+  
+  ESP_LOGI(TAG, "Poll interval updated to %" PRIu32 " ms", interval);
+}
+
+void Miot::update_heartbeat_interval(uint32_t interval) {
+  if (this->heartbeat_interval_ == interval)
+    return;
+  
+  this->heartbeat_interval_ = interval;
+  
+  // Cancel old interval and set new one if heartbeat is configured
+  if (heartbeat_siid_ != 0 && heartbeat_piid_ != 0) {
+    this->cancel_interval("heartbeat");
+    
+    this->set_interval("heartbeat", heartbeat_interval_, [this] {
+      set_property(heartbeat_siid_, heartbeat_piid_, MiotValue(heartbeat_value_));
+    });
+    
+    ESP_LOGI(TAG, "Heartbeat interval updated to %" PRIu32 " ms", interval);
+  }
 }
 
 void Miot::queue_net_change_command(bool force) {

@@ -1,0 +1,219 @@
+# https://github.com/dhewg/esphome-miot
+# https://home.miot-spec.com/spec/xiaomi.fan.p45
+
+external_components:
+  source: github://dhewg/esphome-miot@main
+
+esphome:
+  name: tower-fan
+  friendly_name: Tower Fan
+  comment: Xiaomi Tower Fan 2 (xiaomi.fan.p45)
+  project:
+    name: "dhewg.esphome-miot"
+    version: "xiaomi.fan.p45"
+
+esp32:
+  board: esp32-c3-devkitm-1
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_custom_mac: true
+      ignore_efuse_mac_crc: true
+
+logger:
+  level: DEBUG
+
+debug:
+
+api:
+  encryption:
+    key: !secret api_key_tower_fan
+  reboot_timeout: 0s
+  services:
+    - service: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: 'id(miot_main).queue_command(command);'
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  ap:
+    password: !secret wifi_ap_password
+
+captive_portal:
+
+web_server:
+  port: 80
+  version: 3
+      
+uart:
+  tx_pin: GPIO7
+  rx_pin: GPIO6
+  baud_rate: 115200
+
+miot:
+  id: miot_main
+
+fan:
+  - platform: "miot"
+    name: "Fan"
+    icon: "mdi:fan"
+    state:
+      miot_siid: 2
+      miot_piid: 1
+    speed:
+      miot_siid: 2
+      miot_piid: 5
+      min_value: 1
+      max_value: 100
+#    oscillating:
+#      miot_siid: 2
+#      miot_piid: 6
+
+switch:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 6
+    name: "Oscillating"
+    icon: "mdi:arrow-oscillating"
+  - platform: "miot"
+    miot_siid: 12
+    miot_piid: 1
+    name: "Off Delay"
+    icon: "mdi:clock-outline"
+    internal: true
+  - platform: "miot"
+    miot_siid: 5
+    miot_piid: 1
+    name: "Indicator Lights"
+    icon: "mdi:lightbulb"
+    entity_category: config
+  - platform: "miot"
+    miot_siid: 7
+    miot_piid: 1
+    name: "Notification Sounds"
+    icon: "mdi:volume-high"
+    entity_category: config
+  - platform: "miot"
+    miot_siid: 11
+    miot_piid: 1
+    name: "Child Lock"
+    icon: "mdi:lock"
+    entity_category: config
+
+select:
+  - platform: "miot"
+    id: "mode"
+    miot_siid: 2
+    miot_piid: 3
+    name: "Mode"
+    icon: "mdi:leaf"
+    options:
+      0: "Straight Wind"
+      1: "Natural Wind"
+      2: "Sleep"
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 7
+    name: "Oscillation Angle"
+    icon: "mdi:angle-obtuse"
+    options:
+      30: "30°"
+      60: "60°"
+      90: "90°"
+      120: "120°"
+      150: "150°"
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 4
+    name: "Natural Wind Level"
+    icon: "mdi:fan-chevron-up"
+    options:
+      1: "Lakeside"
+      2: "Campsite"
+      3: "Orchard"
+      4: "Terraced Field" 
+    internal: false
+
+number:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 4
+    name: "Fan Level"
+    icon: "mdi:fan-chevron-up"
+    min_value: 1
+    max_value: 4
+    step: 1
+    internal: true
+  - platform: "miot"
+    miot_siid: 12
+    miot_piid: 2
+    name: "Off Delay"
+    icon: "mdi:clock-outline"
+    unit_of_measurement: "min"
+    device_class: duration
+    min_value: 0
+    max_value: 480
+    step: 1
+  - platform: "miot"
+    miot_siid: 12
+    miot_piid: 3
+    name: "Off Delay Remaining"
+    icon: "mdi:clock-outline"
+    unit_of_measurement: "min"
+    device_class: duration
+    min_value: 0
+    max_value: 480
+    step: 1
+    internal: true
+
+button:
+  - platform: "miot"
+    miot_siid: 2
+    miot_aiid: 3
+    name: "Toggle Power"
+    icon: "mdi:power-cycle"
+    internal: true
+  - platform: "miot"
+    id: "turn_left"
+    name: "Adjust Left"
+    icon: "mdi:pan-left"
+    miot_siid: 2
+    miot_aiid: 5
+  - platform: "miot"
+    id: "turn_right"
+    name: "Adjust Right"
+    icon: "mdi:pan-right"
+    miot_siid: 2
+    miot_aiid: 4
+  - platform: "miot"
+    name: "Change Mode"
+    icon: "mdi:leaf"
+    miot_siid: 13
+    miot_aiid: 1
+    internal: true
+  - platform: "miot"
+    name: "Change Speed"
+    icon: "mdi:fan"
+    miot_siid: 13
+    miot_aiid: 2
+    internal: true
+
+text_sensor:
+  - platform: "miot"
+    miot_siid: 2
+    miot_piid: 2
+    name: "Device Fault"
+    icon: mdi:fan-alert
+    entity_category: diagnostic
+    filters:
+      - map:
+        - "0 -> No Fault"

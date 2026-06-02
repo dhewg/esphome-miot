@@ -134,6 +134,9 @@ void MiotFan::control(const fan::FanCall &call) {
       mode = it->first;
   }
 
+  if (call.get_state().has_value())
+    this->parent_->set_property(this->state_siid_, this->state_piid_, MiotValue(*call.get_state() ? "true" : "false"));
+
   if (mode.has_value()) {
     this->speed = 0;
     this->parent_->set_property(this->preset_modes_siid_, this->preset_modes_piid_, MiotValue(*mode));
@@ -147,8 +150,6 @@ void MiotFan::control(const fan::FanCall &call) {
     this->parent_->set_property(this->oscillating_siid_, this->oscillating_piid_, MiotValue(*call.get_oscillating() ? "true" : "false"));
   if (this->direction_siid_ != 0 && this->direction_piid_ != 0 && call.get_direction().has_value())
     this->parent_->set_property(this->direction_siid_, this->direction_piid_, MiotValue(*call.get_direction() == fan::FanDirection::REVERSE ? "true" : "false"));
-  if (call.get_state().has_value())
-    this->parent_->set_property(this->state_siid_, this->state_piid_, MiotValue(*call.get_state() ? "true" : "false"));
 }
 
 }  // namespace miot

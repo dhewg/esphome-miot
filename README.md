@@ -65,6 +65,7 @@ Xiaomi Smart Tower Fan 2 | xiaomi.fan.p45 | Proprietary chip _MHCWB5G-B_ | [link
 Xiaomi Smart Pet Food Feeder 2 | xiaomi.feeder.iv2001 | Proprietary chip _MHCW05P-B_ | [link](../../pull/72) | [link](https://home.miot-spec.com/spec/xiaomi.feeder.iv2001)
 Xiaomi Smart Graphene Heater | xiaomi.heater.ma8 | No dedicated MCU | [link](../../issues/98) | [link](https://home.miot-spec.com/spec/xiaomi.heater.ma8)
 Xiaomi Smart Evaporative Humidifier | xiaomi.humidifier.3lite | Proprietary chip _MHCWB5G-B_ | [link](../../pull/105) | [link](https://home.miot-spec.com/spec/xiaomi.humidifier.3lite)
+Dream Maker Feel (Plus) | dmaker.fan.02 | Proprietary MCU protocol (Alternative component available) | [link](../../issues/50) <br> [solution](https://github.com/d0np3p3/esphome-dreammaker-fan) | [link](https://home.miot-spec.com/p/dmaker.fan.02)
 
 ## Building a firmware
 

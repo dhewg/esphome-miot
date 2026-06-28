@@ -19,7 +19,7 @@ DEPENDENCIES = ["miot"]
 MiotSwitch = miot_ns.class_("MiotSwitch", switch.Switch, cg.Component)
 
 CONFIG_SCHEMA = (
-    switch.switch_schema(MiotSwitch)
+    switch.switch_schema(MiotSwitch, default_restore_mode="DISABLED")
     .extend(
         {
             cv.GenerateID(CONF_MIOT_ID): cv.use_id(Miot),

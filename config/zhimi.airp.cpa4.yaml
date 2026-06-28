@@ -1,0 +1,260 @@
+# https://home.miot-spec.com/spec/zhimi.airp.cpa4
+
+# Using more than 4 MIOT components through the miot library causes the MCU to soft reboot
+
+external_components:
+  source: github://dhewg/esphome-miot@main
+
+esphome:
+  name: xiaomi-air-purifier-4-compact
+  friendly_name: Xiaomi Smart Air Purifier 4 Compact
+  project:
+    name: "jchisholm204.esphome-miot"
+    version: "zhimi.airp.cpa4"
+
+esp32:
+  variant: ESP32
+  board: esp32dev
+  flash_size: 4MB
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_mac_crc: True
+      ignore_efuse_custom_mac: True
+
+# Enable logging
+logger:
+  level: DEBUG
+
+# Enable Home Assistant API
+api:
+  encryption:
+    key: !secret api_encryption_key
+  reboot_timeout: 0s
+
+
+ota:
+  - platform: esphome
+    password: !secret ota_password
+
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+  power_save_mode: NONE
+
+  # Enable fallback hotspot (captive portal) in case wifi connection fails
+  ap:
+    ssid: "Xiaomi-Air-Purifier-4-Compact"
+
+captive_portal:
+
+# Manual Fetch the properties we want on set intervals
+interval:
+  - interval: 10s
+    then:
+      - lambda: |-
+          id(miot_main).queue_command("get_properties 3 4"); // PM2.5
+  - interval: 60s
+    then:
+      - lambda: |-
+          id(miot_main).queue_command("get_properties 4 1"); // Filter Level Percentage
+  - interval: 60s
+    then:
+      - lambda: |-
+          id(miot_main).queue_command("get_properties 4 3"); // Filter Used Time        
+  - interval: 45s
+    then:
+      - lambda: |-
+          id(miot_main).queue_command("get_properties 4 4"); // Filter Time Left         
+  - interval: 10s
+    then:
+      - lambda: |-
+          id(miot_main).queue_command("get_properties 9 1"); // Motor RPM
+  - interval: 30s
+    then:
+      - lambda: |-
+          id(miot_main).queue_command("get_properties 13 2"); // Display Brightness
+  # Heartbeat Token - DO NOT CHANGE
+  - interval: 30s
+    then:
+      - lambda: |-
+          static uint16_t heartbeat_counter = 0;
+          
+          // Construct the incrementing command string
+          std::string cmd = "set_properties 11 4 " + std::to_string(heartbeat_counter);
+          ESP_LOGI("manual_heartbeat", "Sending rolling heartbeat token: %d", heartbeat_counter);
+
+          id(miot_main).queue_command(cmd.c_str());
+          
+          // Increment the counter (automatically rolls over to 0 after 65535)
+          heartbeat_counter++;
+
+uart:
+  id: uart_bus
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 115200
+  debug:
+    direction: BOTH
+    dummy_receiver: false
+    after:
+      delimiter: "\n"
+    sequence:
+      - lambda: |-
+          std::string msg(bytes.begin(), bytes.end());
+
+          if (direction == UART_DIRECTION_TX) {
+            // -- DEBUG --
+            while (!msg.empty() && (msg.back() == '\r' || msg.back() == '\n')) {
+              msg.pop_back();
+            }
+            // ESP_LOGW("tx", "%s", msg.c_str());
+            // -- DEBUG --
+            return;
+          }
+
+          if (direction == UART_DIRECTION_RX) {
+            // -- DEBUG --
+            while (!msg.empty() && (msg.back() == '\r' || msg.back() == '\n')) {
+              msg.pop_back();
+            }
+            // ESP_LOGW("rx", "%s", msg.c_str());
+            // -- DEBUG --
+
+            int siid = 0;
+            int piid = 0;
+            int val = 0;
+            int status = -1;
+
+            // Parse Properties
+            if (sscanf(msg.c_str(), "properties_changed %d %d %d", &siid, &piid, &val) == 3) {
+              status = 0;
+            }
+            else if (sscanf(msg.c_str(), "result %d %d %d %d", &siid, &piid, &status, &val) == 4) {
+            }
+
+            if(status != 0) {
+              return;
+            }
+
+            // Route to the correct template sensor based on SIID and PIID
+            if (siid == 4 && piid == 1) id(filter_life).publish_state(val);
+            if (siid == 4 && piid == 3) id(filter_used).publish_state(val);
+            if (siid == 4 && piid == 4) id(filter_left).publish_state(val);
+            if (siid == 3 && piid == 4) id(pm25_density).publish_state(val);
+            if (siid == 9 && piid == 1) id(fan_rpm).publish_state(val);
+            if (siid == 13 && piid == 2) id(display_brightness_slider).publish_state(val);
+          }
+
+
+miot:
+  id: miot_main
+  uart_id: uart_bus
+
+
+fan:
+  - platform: miot
+    name: "Fan"
+    # Fan State (on/off): Air Purifier - Power
+    state:
+      miot_siid: 2
+      miot_piid: 1
+    # Fan Speed: custom-service - favorite-level
+    speed:
+      miot_siid: 9
+      miot_piid: 11
+      min_value: 1
+      max_value: 14
+      step: 1
+    preset_modes:
+      miot_siid: 2
+      miot_piid: 4
+      options:
+        0: "Auto"
+        1: "Sleep"
+        2: ""
+    
+
+sensor:
+  - platform: template
+    name: "Filter Life Level"
+    id: filter_life
+    unit_of_measurement: "%"
+    icon: "mdi:filter-outline"
+    accuracy_decimals: 0
+    state_class: measurement
+
+  - platform: template
+    name: "Filter Used Time"
+    id: filter_used
+    unit_of_measurement: "h"
+    icon: "mdi:clock-outline"
+    accuracy_decimals: 0
+    state_class: measurement
+
+  - platform: template
+    name: "Filter Left Time"
+    id: filter_left
+    unit_of_measurement: "h"
+    icon: "mdi:clock-outline"
+    accuracy_decimals: 0
+    state_class: measurement
+
+  - platform: template
+    name: "PM2.5 Density"
+    id: pm25_density
+    unit_of_measurement: "µg/m³"
+    icon: "mdi:blur"
+    accuracy_decimals: 0
+    device_class: pm25
+    state_class: measurement
+
+  - platform: template
+    name: "Fan RPM"
+    id: fan_rpm
+    unit_of_measurement: "rpm"
+    icon: "mdi:fan"
+    accuracy_decimals: 0
+    state_class: measurement
+
+  - platform: internal_temperature
+    name: "ESP32 Temperature"
+    update_interval: 10s
+
+number:
+  - platform: template
+    name: "Display Brightness"
+    id: display_brightness_slider
+    icon: "mdi:brightness-6"
+    min_value: 0
+    max_value: 2
+    step: 1
+    mode: SLIDER
+    optimistic: true # Holds the state in the UI until an RX confirmation updates it
+    set_action:
+      - lambda: |-
+          int target_level = (int)x;
+          std::string cmd = "set_properties 13 2 " + std::to_string(target_level);
+          id(miot_main).queue_command(cmd.c_str());
+
+
+button:
+  - platform: template
+    name: "Reset Filter Life"
+    id: reset_filter_btn
+    icon: "mdi:restart"
+    on_press:
+      - lambda: |-
+          ESP_LOGI("custom_control", "Sending Filter Reset Command...");
+          id(miot_main).queue_command("action 4 1 3 0");
+  - platform: template
+    name: "Toggle Mode"
+    id: toggle_mode
+    icon: "mdi:restart"
+    on_press:
+      - lambda: |-
+          ESP_LOGI("custom_control", "Toggle Mode");
+          id(miot_main).queue_command("action 9 1");

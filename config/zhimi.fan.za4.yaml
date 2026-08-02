@@ -1,0 +1,162 @@
+esphome:
+  name: smartmi-fan
+  friendly_name: Smartmi Standing Fan 2S
+  project:
+    name: "dhewg.esphome-miot"
+    version: "zhimi.fan.za4"
+
+external_components:
+  - source: github://deviant-aut/esphome-zhimi-miio@main
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_custom_mac: true
+      ignore_efuse_mac_crc: true
+      sram1_as_iram: true
+
+logger:
+  level: WARN
+  baud_rate: 0
+
+api:
+  services:
+    - service: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: 'id(fan_hub).queue_command(command);'
+
+ota:
+  - platform: esphome
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+uart:
+  tx_pin: GPIO17
+  rx_pin: GPIO16
+  baud_rate: 115200
+
+# zhimi.fan.za4 uses the legacy miio2miot protocol, not MIoT SIID/PIID RPC.
+zhimi_miio:
+  id: fan_hub
+  poll_interval: 10s
+  poll_properties:
+    - power
+    - mode
+    - fan_level
+    - speed_level
+    - natural_level
+    - angle
+    - angle_enable
+    - child_lock
+    - buzzer
+    - led_b
+    - poweroff_time
+    - speed
+    - use_time
+
+fan:
+  - platform: zhimi_miio
+    name: Fan
+    icon: mdi:fan
+
+select:
+  - platform: template
+    name: Mode
+    icon: mdi:leaf
+    options: ["Direct", "Natural"]
+    update_interval: 10s
+    lambda: |-
+      if (id(fan_hub).get_string("mode") == "natural")
+        return std::string{"Natural"};
+      return std::string{"Direct"};
+    set_action:
+      - lambda: 'id(fan_hub).set_mode(x == "Natural" ? "natural" : "normal");'
+  - platform: template
+    name: Indicator Light
+    entity_category: config
+    options: ["Bright", "Dim", "Off"]
+    update_interval: 10s
+    lambda: |-
+      switch (id(fan_hub).get_number("led_b", -1)) {
+        case 0: return std::string{"Bright"};
+        case 1: return std::string{"Dim"};
+        case 2: return std::string{"Off"};
+      }
+      return {};
+    set_action:
+      - lambda: |-
+          int value = x == "Dim" ? 1 : (x == "Off" ? 2 : 0);
+          id(fan_hub).set_number_prop("led_b", value);
+
+number:
+  - platform: template
+    name: Fan Level
+    icon: mdi:fan-chevron-up
+    update_interval: 10s
+    min_value: 1
+    max_value: 4
+    step: 1
+    lambda: 'return id(fan_hub).get_number("fan_level", 0);'
+    set_action:
+      - lambda: 'id(fan_hub).set_number_prop("fan_level", (int) x);'
+  - platform: template
+    name: Swing Angle
+    min_value: 0
+    max_value: 120
+    step: 1
+    unit_of_measurement: "°"
+    update_interval: 10s
+    lambda: 'return id(fan_hub).get_number("angle", 0);'
+    set_action:
+      - lambda: 'id(fan_hub).set_number_prop("angle", (int) x);'
+  - platform: template
+    name: Timer
+    entity_category: config
+    min_value: 0
+    max_value: 480
+    step: 1
+    unit_of_measurement: min
+    update_interval: 10s
+    lambda: 'return id(fan_hub).get_number("poweroff_time", 0) / 60.0f;'
+    set_action:
+      - lambda: 'id(fan_hub).set_number_prop("poweroff_time", (int) (x * 60));'
+
+switch:
+  - platform: template
+    name: Child Lock
+    icon: mdi:lock
+    entity_category: config
+    lambda: 'return id(fan_hub).get_string("child_lock") == "on";'
+    turn_on_action:
+      - lambda: 'id(fan_hub).set_string_prop("child_lock", "on");'
+    turn_off_action:
+      - lambda: 'id(fan_hub).set_string_prop("child_lock", "off");'
+  - platform: template
+    name: Buzzer
+    icon: mdi:volume-high
+    entity_category: config
+    lambda: 'return id(fan_hub).get_number("buzzer", 0) > 0;'
+    turn_on_action:
+      - lambda: 'id(fan_hub).set_number_prop("buzzer", 1);'
+    turn_off_action:
+      - lambda: 'id(fan_hub).set_number_prop("buzzer", 0);'
+
+button:
+  - platform: template
+    name: Turn Left
+    icon: mdi:pan-left
+    on_press:
+      - lambda: 'id(fan_hub).set_string_prop("move", "left");'
+  - platform: template
+    name: Turn Right
+    icon: mdi:pan-right
+    on_press:
+      - lambda: 'id(fan_hub).set_string_prop("move", "right");'

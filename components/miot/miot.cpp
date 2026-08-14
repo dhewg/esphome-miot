@@ -137,10 +137,12 @@ void Miot::loop() {
 
 void Miot::dump_config() {
   ESP_LOGCONFIG(TAG, "MIoT:");
-  if (!model_.empty())
+  if (!model_.empty()) {
     ESP_LOGCONFIG(TAG, "  Model: %s", model_.c_str());
-  if (!mcu_version_.empty())
+  }
+  if (!mcu_version_.empty()) {
     ESP_LOGCONFIG(TAG, "  MCU Version: %s", mcu_version_.c_str());
+  }
   ESP_LOGCONFIG(TAG, "  Heartbeat SIID: %" PRIu32, this->heartbeat_siid_);
   ESP_LOGCONFIG(TAG, "  Heartbeat PIID: %" PRIu32, this->heartbeat_piid_);
   ESP_LOGCONFIG(TAG, "  OTA net indicator: %s", this->ota_net_indicator_.c_str());
@@ -151,8 +153,9 @@ void Miot::dump_config() {
 #endif
   if (!mcu_log_.empty()) {
     ESP_LOGCONFIG(TAG, "  MCU Log:");
-    for (auto it = mcu_log_.cbegin(); it != mcu_log_.cend(); ++it)
+    for (auto it = mcu_log_.cbegin(); it != mcu_log_.cend(); ++it) {
       ESP_LOGCONFIG(TAG, "    %s", (*it).c_str());
+    }
   }
 }
 
@@ -435,13 +438,15 @@ void Miot::process_message_() {
     send_reply_(get_mac_address().c_str());
   } else if (cmd == "model") {
     model_ = strtok_r(nullptr, " ", &saveptr);
-    if (!model_.empty())
+    if (!model_.empty()) {
       ESP_LOGI(TAG, "Model: %s", model_.c_str());
+    }
     send_reply_("ok");
   } else if (cmd == "mcu_version") {
     mcu_version_ = strtok_r(nullptr, " ", &saveptr);
-    if (!mcu_version_.empty())
+    if (!mcu_version_.empty()) {
       ESP_LOGI(TAG, "MCU Version: %s", mcu_version_.c_str());
+    }
     send_reply_("ok");
   } else if (cmd == "error") {
     const char *error = strtok_r(nullptr, "\"", &saveptr);

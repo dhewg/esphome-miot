@@ -29,8 +29,9 @@ void MiotFan::setup() {
 
   this->parent_->register_listener(this->speed_siid_, this->speed_piid_, true, mvtUInt, [this](const MiotValue &value) {
     if (!this->state) {
-      if (value.as_uint != 0)
+      if (value.as_uint != 0) {
         ESP_LOGW(TAG, "Ignoring MCU reported speed, fan is off");
+      }
       return;
     }
     if (this->has_preset_mode()) {
@@ -98,10 +99,12 @@ void MiotFan::dump_config() {
     ESP_LOGCONFIG(TAG, "  Preset Modes SIID: %" PRIu32, this->preset_modes_siid_);
     ESP_LOGCONFIG(TAG, "  Preset Modes PIID: %" PRIu32, this->preset_modes_piid_);
     ESP_LOGCONFIG(TAG, "  Preset Modes:");
-    for (auto const &it : this->preset_modes_)
+    for (auto const &it : this->preset_modes_) {
       ESP_LOGCONFIG(TAG, "    %u: %s", it.first, it.second);
-    if (this->manual_speed_preset_.has_value())
+    }
+    if (this->manual_speed_preset_.has_value()) {
       ESP_LOGCONFIG(TAG, "  Manual Preset Mode: %" PRIu8, *this->manual_speed_preset_);
+    }
   }
 }
 

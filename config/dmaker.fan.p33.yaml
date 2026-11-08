@@ -53,6 +53,7 @@ miot:
 fan:
   - platform: "miot"
     name: "Fan"
+    id: standing_fan
     state:
       miot_siid: 2
       miot_piid: 1
@@ -66,6 +67,15 @@ fan:
       miot_piid: 4
 
 switch:
+  - platform: template
+    name: "Oscillation"
+    id: oscillation
+    icon: "mdi:swap-horizontal"
+    lambda: return id(standing_fan).oscillating;
+    turn_on_action:
+      - lambda: id(standing_fan).make_call().set_oscillating(true).perform();
+    turn_off_action:
+      - lambda: id(standing_fan).make_call().set_oscillating(false).perform();
   - platform: "miot"
     miot_siid: 4
     miot_piid: 1
@@ -108,6 +118,21 @@ select:
       140: "140°"
 
 number:
+  - platform: template
+    name: Fan Speed
+    icon: mdi:fan
+    unit_of_measurement: "%"
+    mode: slider
+    min_value: 0
+    max_value: 100
+    step: 1
+    update_interval: 1s
+    lambda: |-
+      return id(standing_fan).state ? id(standing_fan).speed : 0;
+    set_action:
+      - script.execute:
+          id: set_fan_speed
+          speed: !lambda return static_cast<int>(x);
   - platform: "miot"
     miot_siid: 2
     miot_piid: 2
@@ -120,6 +145,8 @@ number:
     miot_siid: 3
     miot_piid: 1
     name: "Off Delay"
+
+    id: off_delay
     icon: "mdi:clock-outline"
     unit_of_measurement: "min"
     device_class: duration
@@ -141,7 +168,7 @@ button:
   - platform: "template"
     name: "Adjust Right"
     icon: "mdi:pan-right"
-    on_press: 
+    on_press:
       - lambda: id(miot_main).queue_command("set_properties 6 1 2");
   - platform: "miot"
     name: "Toggle Mode"
@@ -153,3 +180,47 @@ button:
     icon: "mdi:fan"
     miot_siid: 3
     miot_aiid: 2
+  - platform: template
+    name: "Toggle Oscillation"
+    icon: "mdi:swap-horizontal"
+    on_press:
+      - switch.toggle: oscillation
+  - platform: template
+    name: "Toggle Off Delay"
+    icon: "mdi:timer-outline"
+    on_press:
+      - lambda: |-
+          if (id(off_delay).has_state()) {
+            auto call = id(off_delay).make_call();
+            const float minutes = id(off_delay).state;
+            const float next = minutes < 240 ? (static_cast<int>(minutes) / 60 + 1) * 60 : 0;
+            call.set_value(next);
+            call.perform();
+          }
+
+script:
+  - id: set_fan_speed
+    mode: restart
+    parameters:
+      speed: int
+    then:
+      - if:
+          condition:
+            lambda: return speed == 0;
+          then:
+            - fan.turn_off: standing_fan
+          else:
+            - if:
+                condition:
+                  fan.is_off: standing_fan
+                then:
+                  - fan.turn_on: standing_fan
+                  - wait_until:
+                      condition:
+                        fan.is_on: standing_fan
+                      timeout: 3s
+            - if:
+                condition:
+                  fan.is_on: standing_fan
+                then:
+                  - lambda: id(standing_fan).make_call().set_speed(speed).perform();

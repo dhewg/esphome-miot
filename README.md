@@ -32,6 +32,7 @@ Smartmi Air Purifier | zhimi.airpurifier.za1 |  | [zhimi.airpurifier.za1](config
 Mi Smart Standing Fan 2 | dmaker.fan.p18 |  | [dmaker.fan.p18](config/dmaker.fan.p18.yaml) | [link](https://home.miot-spec.com/spec/dmaker.fan.p18)
 Mi Smart Standing Fan 2 Lite | dmaker.fan.1c | [link](../../wiki/Smart-Standing-Fan-2-Lite) | [dmaker.fan.1c](config/dmaker.fan.1c.yaml) | [link](https://home.miot-spec.com/spec/dmaker.fan.1c)
 Mi Smart Standing Fan 2 Pro | dmaker.fan.p33 |  | [dmaker.fan.p33](config/dmaker.fan.p33.yaml) | [link](https://home.miot-spec.com/spec/dmaker.fan.p33)
+Xiaomi Smart Tower Fan | dmaker.fan.p39 | [link](../../wiki/Xiaomi-Smart-Tower-Fan) | [dmaker.fan.p39](config/dmaker.fan.p39.yaml) | [link](https://home.miot-spec.com/spec/dmaker.fan.p39)
 Xiaomi Smart Pet Food Feeder | mmgg.feeder.fi1 | [link](../../wiki/Xiaomi-Smart-Pet-Food-Feeder) | [mmgg.feeder.fi1](config/mmgg.feeder.fi1.yaml) | [link](https://home.miot-spec.com/spec/mmgg.feeder.fi1)
 
 Some of the devices have more than one model (like Mi Air Purifier 3C). If their MIoT specifications are compatible, the ESPHome config will be usable with all of them.
@@ -60,7 +61,6 @@ Xiaomi Air Purifier 4 Lite (CN Model) | zhimi.airp.rma3 | No dedicated MCU | [li
 Xiaomi Smart Air Purifier 4 Compact | zhimi.airp.cpa4 | No dedicated MCU | [link](../../issues/22#issuecomment-2137163103) | [link](https://home.miot-spec.com/spec/zhimi.airp.cpa4)
 Smartmi Evaporative Humidifier | zhimi.humidifier.cb1 | Proprietary chip _MHCWB2P_ | [link](../../issues/26#issuecomment-2417148320) | [link](https://home.miot-spec.com/spec/zhimi.humidifier.cb1)
 Smartmi Evaporative Humidifier 3 | zhimi.humidifier.ca6 | No dedicated MCU | [link](../../issues/102) | [link](https://home.miot-spec.com/spec/zhimi.humidifier.ca6)
-Xiaomi Smart Tower Fan | dmaker.fan.p39 | Proprietary chip _MHCWB4P-B_ | [link](../../pull/52) | [link](https://home.miot-spec.com/spec/dmaker.fan.p39)
 Xiaomi Smart Tower Fan 2 | xiaomi.fan.p45 | Proprietary chip _MHCWB5G-B_ | [link](../../issues/78) | [link](https://home.miot-spec.com/spec/xiaomi.fan.p45)
 Xiaomi Smart Pet Food Feeder 2 | xiaomi.feeder.iv2001 | Proprietary chip _MHCW05P-B_ | [link](../../pull/72) | [link](https://home.miot-spec.com/spec/xiaomi.feeder.iv2001)
 Xiaomi Smart Graphene Heater | xiaomi.heater.ma8 | No dedicated MCU | [link](../../issues/98) | [link](https://home.miot-spec.com/spec/xiaomi.heater.ma8)

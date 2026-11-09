@@ -39,7 +39,7 @@ void MiotFan::setup() {
       return;
     }
     this->speed = (value.as_uint - this->speed_min_) / this->speed_step_ + 1;
-    ESP_LOGV(TAG, "MCU reported speed %" PRIu32 ":%" PRIu32 " is: %" PRIi32 " (raw: %" PRIu32 ")", this->speed_siid_, this->speed_piid_, this->speed, value.as_uint);
+    ESP_LOGV(TAG, "MCU reported speed %" PRIu32 ":%" PRIu32 " is: %u (raw: %" PRIu32 ")", this->speed_siid_, this->speed_piid_, this->speed, value.as_uint);
     this->publish_state();
   });
 
@@ -53,7 +53,7 @@ void MiotFan::setup() {
   if (this->direction_siid_ != 0 && this->direction_piid_ != 0)
     this->parent_->register_listener(this->direction_siid_, this->direction_piid_, true, mvtString, [this](const MiotValue &value) {
       this->direction = value.as_string == "true" ? fan::FanDirection::REVERSE : fan::FanDirection::FORWARD;
-      ESP_LOGV(TAG, "MCU reported direction %" PRIu32 ":%" PRIu32 " is: %s", this->direction_siid_, this->direction_piid_, fan::fan_direction_to_string(this->direction));
+      ESP_LOGV(TAG, "MCU reported direction %" PRIu32 ":%" PRIu32 " is: %s", this->direction_siid_, this->direction_piid_, LOG_STR_ARG(fan::fan_direction_to_string(this->direction)));
       this->publish_state();
     });
 

@@ -28,7 +28,7 @@ def validate_heartbeat(config):
     return config
 
 CONFIG_SCHEMA = cv.All(
-    cv.require_esphome_version(2026, 4, 0),
+    cv.require_esphome_version(2026, 5, 0),
     cv.Schema(
         {
             cv.GenerateID(): cv.declare_id(Miot),

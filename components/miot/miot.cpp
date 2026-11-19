@@ -3,6 +3,7 @@
 
 #include "miot.h"
 #include "esphome/components/network/util.h"
+#include "esphome/core/alloc_helpers.h"
 #include "esphome/core/application.h"
 #include "esphome/core/gpio.h"
 #include "esphome/core/helpers.h"
@@ -435,7 +436,9 @@ void Miot::process_message_() {
     ESP_LOGD(TAG, "MCU time request: %s", reply.c_str());
     send_reply_(reply.c_str());
   } else if (cmd == "mac") {
-    send_reply_(get_mac_address().c_str());
+    char mac[MAC_ADDRESS_BUFFER_SIZE];
+    get_mac_address_into_buffer(mac);
+    send_reply_(mac);
   } else if (cmd == "model") {
     model_ = strtok_r(nullptr, " ", &saveptr);
     if (!model_.empty()) {

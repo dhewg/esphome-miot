@@ -7,9 +7,21 @@ namespace miot {
 static const char *const TAG = "miot.switch";
 
 void MiotSwitch::setup() {
+  this->restore_state_ = this->get_initial_state_with_restore_mode();
+  this->restore_pending_ = this->restore_state_.has_value();
+
   this->parent_->register_listener(this->siid_, this->piid_, this->poll_, mvtString, [this](const MiotValue &value) {
     bool v = value.as_string == true_value_;
     ESP_LOGV(TAG, "MCU reported switch %" PRIu32 ":%" PRIu32 " is: %s", this->siid_, this->piid_, ONOFF(v));
+
+    if (this->restore_pending_) {
+      this->restore_pending_ = false;
+      if (this->restore_state_.value() != v) {
+        this->write_state(this->restore_state_.value());
+        return;
+      }
+    }
+
     this->publish_state(v);
   });
 }

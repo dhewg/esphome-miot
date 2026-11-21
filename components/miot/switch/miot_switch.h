@@ -33,6 +33,8 @@ class MiotSwitch : public switch_::Switch, public Component {
   bool poll_{true};
   std::string true_value_;
   std::string false_value_;
+  optional<bool> restore_state_{};
+  bool restore_pending_{false};
 };
 
 }  // namespace miot

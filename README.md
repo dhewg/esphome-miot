@@ -63,7 +63,7 @@ Smartmi Evaporative Humidifier 3 | zhimi.humidifier.ca6 | No dedicated MCU | [li
 Xiaomi Smart Tower Fan | dmaker.fan.p39 | Proprietary chip _MHCWB4P-B_ | [link](../../pull/52) | [link](https://home.miot-spec.com/spec/dmaker.fan.p39)
 Xiaomi Smart Tower Fan 2 | xiaomi.fan.p45 | Proprietary chip _MHCWB5G-B_ | [link](../../issues/78) | [link](https://home.miot-spec.com/spec/xiaomi.fan.p45)
 Xiaomi Smart Standing Air Circulation Fan | xiaomi.fan.p76 | Proprietary chip _MHCWB5G-B_ | [link](../../pull/116) | [link](https://home.miot-spec.com/spec/xiaomi.fan.p76)
-Xiaomi Smart Pet Food Feeder 2 | xiaomi.feeder.iv2001 | Proprietary chip _MHCW05P-B_ | [link](../../pull/72) | [link](https://home.miot-spec.com/spec/xiaomi.feeder.iv2001)
+Xiaomi Smart Pet Food Feeder 2 | xiaomi.feeder.iv2001 | Proprietary chip _MHCW05P-B_ (Alternative firmware available) | [link](../../pull/72) <br> [solution](https://github.com/cristianchelu/xiaomi-feeder-iv2001) | [link](https://home.miot-spec.com/spec/xiaomi.feeder.iv2001)
 Mijia Smart Steam Air Fryer 7L | xiaomi.fryer.st701o | No dedicated MCU | [link](../../pull/123) | [link](https://home.miot-spec.com/spec/xiaomi.fryer.st701o)
 Xiaomi Smart Graphene Heater | xiaomi.heater.ma8 | No dedicated MCU | [link](../../issues/98) | [link](https://home.miot-spec.com/spec/xiaomi.heater.ma8)
 Xiaomi Smart Evaporative Humidifier | xiaomi.humidifier.3lite | Proprietary chip _MHCWB5G-B_ | [link](../../pull/105) | [link](https://home.miot-spec.com/spec/xiaomi.humidifier.3lite)

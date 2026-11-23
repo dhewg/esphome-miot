@@ -1,0 +1,268 @@
+
+
+# https://home.miot-spec.com/spec/careli.fryer.maf02
+# https://miot-spec.org/miot-spec-v2/instance?type=urn:miot-spec-v2:device:air-fryer:0000A0A4:careli-maf02:1
+
+external_components:
+  source: github://dhewg/esphome-miot@main
+
+esphome:
+  name: "air-fryer"
+  friendly_name: Mi Smart Air Fryer (3.5L)
+  comment: Mi Smart Air Fryer (3.5L) (careli.fryer.maf02)
+  project:
+    name: dhewg.esphome-miot
+    version: careli.fryer.maf02
+
+esp32:
+  board: esp32dev
+  framework:
+    type: esp-idf
+    sdkconfig_options:
+      CONFIG_FREERTOS_UNICORE: y
+    advanced:
+      ignore_efuse_mac_crc: True
+
+ota:
+  - platform: esphome
+    password: "XXX"
+
+wifi:
+  ssid: !secret wifi_ssid
+  password: !secret wifi_password
+
+  ap:
+    ssid: "Purifierproh Fallback Hotspot"
+    password: "XXX"
+
+logger:
+  level: DEBUG
+
+uart:
+  baud_rate: 115200
+  rx_pin: GPIO16
+  tx_pin: GPIO17
+
+miot:
+  id: miot_main
+
+api:
+  encryption:
+    key: !secret api_key
+  reboot_timeout: 0s
+  actions:
+    - action: mcu_command
+      variables:
+        command: string
+      then:
+        - lambda: !lambda id(miot_main).queue_command(command);
+    - action: start_custom_cook
+      variables:
+        recipe_id: string
+        work_time: int
+        work_temp: int
+        appoint_time: int
+        food_quanty: int
+        preheat_switch: int
+      then:
+        script.execute:
+          id: start_custom_cook
+          recipe_id: !lambda return recipe_id;
+          work_time: !lambda return work_time;
+          work_temp: !lambda return work_temp;
+          appoint_time: !lambda return appoint_time;
+          food_quanty: !lambda return food_quanty;
+          preheat_switch: !lambda return preheat_switch;
+
+text_sensor:
+  - platform: miot
+    id: manufacturer
+    name: Device Manufacturer
+    miot_siid: 1
+    miot_piid: 1
+  - platform: miot
+    id: model
+    name: Device Model
+    miot_siid: 1
+    miot_piid: 2
+  - platform: miot
+    id: serial_number
+    name: Device Serial Number
+    miot_siid: 1
+    miot_piid: 3
+  - platform: miot
+    id: firmware_revision
+    name: Current Firmware Version
+    miot_siid: 1
+    miot_piid: 4
+  - platform: miot
+    id: air_fryer_status
+    name: Status
+    miot_siid: 2
+    miot_piid: 1
+    filters:
+      - map:
+          - 0 -> Shutdown
+          - 1 -> Standby
+          - 2 -> Pause
+          - 3 -> Appointment
+          - 4 -> Cooking
+          - 5 -> Preheat
+          - 6 -> Cooked
+          - 7 -> Preheat Finish
+          - 8 -> Preheat Pause
+          - 9 -> Pause2
+  - platform: miot
+    id: fault
+    name: Device Fault
+    miot_siid: 2
+    miot_piid: 2
+    filters:
+      - map:
+          - 0 -> No Faults
+          - 1 -> E1
+          - 2 -> E2
+  - platform: miot
+    id: recipe_id
+    name: Recipe Id
+    miot_siid: 3
+    miot_piid: 1
+
+number:
+  - platform: miot
+    id: target_time
+    name: Target Time
+    miot_siid: 2
+    miot_piid: 3
+    min_value: 1
+    max_value: 1440
+    step: 1
+    unit_of_measurement: m
+    device_class: duration
+  - platform: miot
+    id: target_temperature
+    name: Target Temperature
+    miot_siid: 2
+    miot_piid: 4
+    min_value: 40
+    max_value: 200
+    step: 1
+    unit_of_measurement: °C
+    device_class: temperature
+  - platform: miot
+    id: appoint_time
+    name: Appoint Time
+    miot_siid: 3
+    miot_piid: 5
+    min_value: 0
+    max_value: 1440
+    step: 1
+    unit_of_measurement: m
+    device_class: duration
+  - platform: miot
+    id: appoint_time_left
+    name: Appoint Time Left
+    miot_siid: 3
+    miot_piid: 8
+    min_value: 0
+    max_value: 1440
+    step: 1
+    unit_of_measurement: m
+    device_class: duration
+
+sensor:
+  - platform: miot
+    id: left_time
+    name: Left Time
+    miot_siid: 2
+    miot_piid: 5
+    unit_of_measurement: m
+    device_class: duration
+
+button:
+  - platform: miot
+    id: start_cook
+    name: Start Cook
+    miot_siid: 2
+    miot_aiid: 1
+  - platform: miot
+    id: cancel_cooking
+    name: Cancel Cooking
+    miot_siid: 2
+    miot_aiid: 2
+  - platform: miot
+    id: air_fryer_pause
+    name: Pause
+    miot_siid: 2
+    miot_aiid: 3
+  - platform: miot
+    id: resume_cooking
+    name: Resume Cooking
+    miot_siid: 3
+    miot_aiid: 2
+
+event:
+  - platform: miot
+    id: cooking_finished_event
+    name: Cooking Finished
+    event_type: cooking_finished
+    miot_siid: 2
+    miot_eiid: 1
+  - platform: miot
+    id: cooking_start_event
+    name: Cooking Start
+    event_type: cooking_start
+    miot_siid: 3
+    miot_eiid: 1
+
+select:
+  - platform: miot
+    id: food_quanty
+    name: Food Quanty
+    miot_siid: 3
+    miot_piid: 6
+    options:
+      "0": "Null"
+      "1": Single
+      "2": Double
+      "3": Half
+      "4": Full
+  - platform: miot
+    id: preheat_switch
+    name: Preheat Switch
+    miot_siid: 3
+    miot_piid: 7
+    options:
+      "0": "Null"
+      "1": "Off"
+      "2": "On"
+  - platform: miot
+    id: turn_pot
+    name: Turn Pot
+    miot_siid: 3
+    miot_piid: 10
+    options:
+      "0": Not Turn Pot
+      "1": Switch Off
+      "2": Turn Pot
+
+script:
+  - id: start_custom_cook
+    parameters:
+      recipe_id: string
+      work_time: int
+      work_temp: int
+      appoint_time: int
+      food_quanty: int
+      preheat_switch: int
+    then:
+      lambda: !lambda |-
+        auto args = str_sprintf("1 \"%s\" 3 %d 4 %d 5 %d 6 %d 7 %d",
+                                recipe_id.c_str(),
+                                work_time,
+                                work_temp,
+                                appoint_time,
+                                food_quanty,
+                                preheat_switch);
+        id(miot_main).execute_action(3, 1, args);
+
